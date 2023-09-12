@@ -137,7 +137,7 @@ players |>
   filter(MP > 100, FGA >= 219)
 ```
 
-**ANSWER** Who do you get as the first result, and what was his trueshooting percentage? Moss Bol, is trueshooting was 0.78 but he didn't take as many shots has someone who starts. I added FGA. In my opinion, I like that better because you can see who takes a lot more shots and make a better conclusion or debate it a little more.  
+**ANSWER** Who do you get as the first result, and what was his trueshooting percentage? Moss Bol, is trueshooting was 0.78 but he didn't take as many shots has someone who starts. I added FGA. In my opinion, I like that better because you can see who takes a lot more shots and make a better conclusion or debate it a little more.
 
 
 So is 100 minutes our level? Here's the truth -- there's not really an answer here. We're picking a cutoff. If you can cite a reason for it and defend it, then it probably works.

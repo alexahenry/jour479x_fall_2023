@@ -82,7 +82,7 @@ The `read_csv` bits are pretty obvious, except for one thing. What happens in th
 ```{r}
 nbaplayers <- read_csv("data/nbaadvancedplayers2223.csv")
 ```
-**Answer** DESCRIBE THE RESULTS HERE
+**Answer** DESCRIBE THE RESULTS HERE: list of nba players was rendered under enviroment
 
 Now we can inspect the data we imported. What does it look like? To do that, we use `head(nbaplayers)` to show the headers and **the first six rows of data**. If we wanted to see them all, we could just simply enter `nbaplayers` and run it.
 
@@ -132,7 +132,7 @@ nbaplayers %>%
   ) %>% arrange(desc(total))
 ```
 
-**Answer** NAME A COMPLICATING FACTOR CONTAINED IN THE RESULT & HOW YOU WOULD RESOLVE IT.
+**Answer** NAME A COMPLICATING FACTOR CONTAINED IN THE RESULT & HOW YOU WOULD RESOLVE IT.: I wouln't include the players that swtiched from other teams because those numbers are lower and don't make much of a story. 
 
 So the most common position in the NBA? Shooting guard, followed by center (although it's close between C and small forward).
 
@@ -196,15 +196,15 @@ Which position in the NBA plays the most minutes? And what is the highest and lo
 nbaplayers %>% 
   group_by(Pos) %>% 
   summarise(
-    total = sum(*COLUMN*), 
+    total = sum(MP), 
     avgminutes = mean(MP), 
-    minminutes = *function*(*COLUMN*),
-    maxminutes = *function*(*COLUMN*),
-    stdev = sd(*COLUMN*)) %>% arrange(desc(total))
+    minminutes = min(MP),
+    maxminutes = max(MP),
+    stdev = sd(MP)) %>% arrange(desc(total))
 ```
 
 So again, no surprise, shooting guards spend the most minutes on the floor in the NBA. They average 951 minutes, but we noted why that's trouble. The minimum is a one-minute wonder, max is some team failing at load management, and the standard deviation is a measure of how spread out the data is. In this case, not the highest spread among positions, but pretty high. So you know you've got some huge minutes players and a bunch of bench players.
 
 Among the top five positions, which one seems the most interesting to you and why? What's a possible story here?
 
-**ANSWER** 
+**ANSWER** The shooting gaurd is most interesting to me. I would probably want to do a story on why the position is valued differently among teams. 
