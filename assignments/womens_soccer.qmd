@@ -67,7 +67,7 @@ matches_2022|>
 ```
 
 
-4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team.(I don't know if I did that right)
+4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team. (I don't know if I did that right)
 
 ```{r}
 matches_2023|>
@@ -76,3 +76,29 @@ matches_2023|>
     total = n()
   )
 ```
+
+
+### Significance tests
+
+```{r}
+matches_2022 <- matches_2022 |> mutate(total_goals = goals + defensive_goals)
+matches_2023 <- matches_2023 |> mutate(total_goals = goals + defensive_goals)
+
+matches_2022_partial <- matches_2022 |> filter(date == '2022-09-14') |> summarise(sum(total_goals))
+
+matches_2023_partial <- matches_2023 |> filter(date == '2022-09-14') |> summarise(sum(total_goals))
+```
+
+
+I'm so sorry, I don't exactly remember the question but I did find that I got 0 for total goals in 2023. I'm not sure how correct that is. But if I had to explain to an audience my findings, I would say that it's middle of the season 
+
+
+```{r}
+result <- t.test(matches_2022$total_goals, matches_2023$total_goals)
+
+matches_2022_early <- matches_2022 |> filter(date < '2022-09-14')
+t.test(matches_2022_early$total_goals, matches_2023$total_goals)
+```
+
+
+Scoring is up by a few points it's not by much. Teams are scoring closer to 3 goals per game but again, it's not much. I would tell an audience that teams are staying about the same but are improving. I think it would be better to compare an individual team. 
