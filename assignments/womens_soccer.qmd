@@ -76,3 +76,93 @@ matches_2023|>
     total = n()
   )
 ```
+## Significance Tests: 
+
+Hypothesis: the is more socring in women's soccer this season than last season. 
+
+Add a column to both dataframes that contains the total_goals for each match. To do this, we'll use mutate and will save the results back to the same dataframe. 
+
+```{r}
+matches_2022 <- matches_2022 |> mutate (total_goals = goals + defensive_goals)
+
+matches_2023 <- matches_2023 |> mutate (total_goals = goals + defensive_goals)
+
+```
+
+```{r}
+t.test(matches_2022$total_goals, matches_2023$total_goals)
+
+```
+There wasn't a large difference between the two seasons. However, the hypothesis is correct that women's soccer team did score more in the current season than last. I would explain this data an audience that women's soccer are scoring more than in the previous games.
+
+```{r}
+matches_2022_early <- matches_2022 |> filter(date < '2022-09-14')
+```
+
+```{r}
+t.test(matches_2022_early$total_goals, matches_2023$total_goals)
+```
+
+It's not a huge difference again but there's slight improvement of how many goals are being scored from year to year. I would explain this to an audience that this season women's soccer are taking more goals.
+
+
+
+
+## Correlations
+
+```{r}
+correlations <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
+```
+
+```{r}
+newcorrelations <- correlations |> 
+  mutate(
+    differential = goals - defensive_goals
+    )
+```
+
+```{r}
+newcorrelations |> summarise(correlation = cor(differential, fouls, method="pearson"))
+```
+
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(differential, yellow_cards, method="pearson"))
+```
+
+```{r}
+fit <- lm(differential ~ fouls, data = newcorrelations)
+summary(fit)
+```
+Fit = how much do fouls predict he outcomes in games
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(differential, so_g, method="pearson"))
+```
+0.68 is closer to 1, therefore a positve relationship 
+
+```{r}
+net <- lm(differential ~ so_g, data = newcorrelations)
+summary(net)
+```
+
+```{r}
+(0.445467*11)+-2.530441 
+```
+
+```{r}
+newcorrelations |> 
+  summarise(correlation = cor(differential, sh_att, method="pearson"))
+```
+
+```{r}
+net <- lm(differential ~ sh_att, data = newcorrelations)
+summary(net)
+```
+
+```{r}
+(0.232868*11)+-2.833383
+```
+Okay, I just kind of plugged in some columns that would work so I looked at shot attempts. I realized as I was doing that some teams that are more aggressive on defense tend to great more offensive plays. So, if I'm reading it correctly, Maryland shouldn't have won the Navy game based on shot attempts. I think it's interesting to look at how many attempts a team is actually taking to see if they are more likely to win games.  
