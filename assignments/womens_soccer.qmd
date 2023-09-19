@@ -67,7 +67,7 @@ matches_2022|>
 ```
 
 
-4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team.(I don't know if I did that right)
+4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team. (I don't know if I did that right)
 
 ```{r}
 matches_2023|>
@@ -76,11 +76,11 @@ matches_2023|>
     total = n()
   )
 ```
-## Significance Tests: 
+## Significance Tests:
 
-Hypothesis: the is more socring in women's soccer this season than last season. 
+Hypothesis: the is more socring in women's soccer this season than last season.
 
-Add a column to both dataframes that contains the total_goals for each match. To do this, we'll use mutate and will save the results back to the same dataframe. 
+Add a column to both dataframes that contains the total_goals for each match. To do this, we'll use mutate and will save the results back to the same dataframe.
 
 ```{r}
 matches_2022 <- matches_2022 |> mutate (total_goals = goals + defensive_goals)
@@ -115,7 +115,7 @@ correlations <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSo
 ```
 
 ```{r}
-newcorrelations <- correlations |> 
+newcorrelations <- correlations |>
   mutate(
     differential = goals - defensive_goals
     )
@@ -127,7 +127,7 @@ newcorrelations |> summarise(correlation = cor(differential, fouls, method="pear
 
 
 ```{r}
-newcorrelations |> 
+newcorrelations |>
   summarise(correlation = cor(differential, yellow_cards, method="pearson"))
 ```
 
@@ -138,10 +138,10 @@ summary(fit)
 Fit = how much do fouls predict he outcomes in games
 
 ```{r}
-newcorrelations |> 
+newcorrelations |>
   summarise(correlation = cor(differential, so_g, method="pearson"))
 ```
-0.68 is closer to 1, therefore a positve relationship 
+0.68 is closer to 1, therefore a positve relationship
 
 ```{r}
 net <- lm(differential ~ so_g, data = newcorrelations)
@@ -149,11 +149,11 @@ summary(net)
 ```
 
 ```{r}
-(0.445467*11)+-2.530441 
+(0.445467*11)+-2.530441
 ```
 
 ```{r}
-newcorrelations |> 
+newcorrelations |>
   summarise(correlation = cor(differential, sh_att, method="pearson"))
 ```
 
@@ -165,4 +165,4 @@ summary(net)
 ```{r}
 (0.232868*11)+-2.833383
 ```
-Okay, I just kind of plugged in some columns that would work so I looked at shot attempts. I realized as I was doing that some teams that are more aggressive on defense tend to great more offensive plays. So, if I'm reading it correctly, Maryland shouldn't have won the Navy game based on shot attempts. I think it's interesting to look at how many attempts a team is actually taking to see if they are more likely to win games.  
+Okay, I just kind of plugged in some columns that would work so I looked at shot attempts. I realized as I was doing that some teams that are more aggressive on defense tend to great more offensive plays. So, if I'm reading it correctly, Maryland shouldn't have won the Navy game based on shot attempts. I think it's interesting to look at how many attempts a team is actually taking to see if they are more likely to win games.
