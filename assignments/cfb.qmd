@@ -1,6 +1,7 @@
 ```{r}
 library(tidyverse)
 library(cfbfastR)
+library(Hmisc)
 ```
 
 
@@ -13,3 +14,54 @@ plays_2023 <- cfbd_pbp_data(2023)
 plays_2023 |> filter(drive_number == 1, play_number == 1, play_type != 'Kickoff') |> distinct(home, play_type)
 ```
 First play: teams are inconsistent about what is defined as a first play. 
+
+```{r}
+logs <- read_csv ("https://dwillis.github.io/sports-data-files/footballlogs1122.csv")
+```
+```{r}
+head(logs)
+```
+
+```{r}
+logs <- logs |> mutate(Differential = TeamScore - OpponentScore)
+```
+
+```{r}
+correlations <- read_csv("https://dwillis.github.io/sports-data-files/footballlogs1122.csv")
+```
+
+```{r}
+newcorrelations <- correlations |>
+  mutate(
+      differential = TeamScore - Penalties
+  )
+```
+
+```{r}
+newcorrelations |> summarise (correlation = cor(differential, Penalties, method="pearson"))
+```
+
+```{r}
+fit <- lm(differential ~ Penalties, data = newcorrelations)
+summary(fit)
+```
+The p-value is 2.2e-16 so this means the results can be random but are still related in some way. The r-square value is 0.02 which means the differential in score isn't entirely related to how many penalties a team gets. This regression might work better for individual teams (i.e. Maryland who may or may not get bogus calls seemingly every game) to see if penalties impact a teams win/loss record.  
+
+
+```{r}
+simplelogs <- logs |> select_if(is.numeric) |> select(-Game) |> select(Differential, Penalties, TotalTurnovers, TeamScore, OpponentScore, DefRushingYds, OffensivePlays)
+```
+
+```{r}
+cormatrix <- rcorr(as.matrix(simplelogs))
+
+cormatrix$r
+```
+Okay so I will say this, I think I just kinda proved that defense wins games by accident. But I choose Offensive plasy and Defensive plays because I wanted to see if there was a possibility that either one would correlate to the differential. There's not much of a relationship BUT it does seem like there is more of a relationship when the defense makes a turnover. There's also some kind of relationship when the offense has more penalties. It's interesting to me because I would've figured penalties and turnovers would affect both sides of the ball not just one. 
+
+```{r}
+logs |> filter(game_type == TeamScore-OppoentScore < 7, game_type != 'Close') |> distinct(home, play_type)
+```
+
+I'm lost on the last one. I'm not sure how to "define" close games. Because I would define a game that is decided by 7 points or less a close game. I'm just not sure how to do that. I did look at the code block from the basketball one we did and played around with different variables but I'm still not sure. Pls help.
+
