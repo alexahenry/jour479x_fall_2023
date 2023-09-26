@@ -88,4 +88,23 @@ logs |>
          Team == "Maryland" & Season == '2022-2023'
      ) |> summarise(avg_score = mean(TeamScore), avg_opp = mean(OpponentScore))
 ```
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/cbblogs1523.csv")
+```
+
+```{r}
+residualmodel <- logs |> mutate(differential = TeamScore - OpponentScore, FGPctMargin = TeamFGPCT - OpponentFGPCT)
+```
+
+
+```{r}
+fit <- lm(differential ~ FGPctMargin, data = residualmodel)
+summary(fit)
+```
+
+```{r}
+residualmodel <- residualmodel |> mutate(predicted = predict(fit), residuals = residuals(fit))
+
+residualmodel <- residualmodel |> filter(!is.na(FGPctMargin))
+```
 

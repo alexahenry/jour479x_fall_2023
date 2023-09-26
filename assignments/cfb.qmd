@@ -26,6 +26,14 @@ head(logs)
 logs <- logs |> mutate(Differential = TeamScore - OpponentScore)
 ```
 
+
+```{r}
+logs <- logs %>%
+  mutate (
+    Differential = abs(TeamScore - OpponentScore)
+  )
+```
+
 ```{r}
 correlations <- read_csv("https://dwillis.github.io/sports-data-files/footballlogs1122.csv")
 ```
@@ -60,8 +68,10 @@ cormatrix$r
 Okay so I will say this, I think I just kinda proved that defense wins games by accident. But I choose Offensive plasy and Defensive plays because I wanted to see if there was a possibility that either one would correlate to the differential. There's not much of a relationship BUT it does seem like there is more of a relationship when the defense makes a turnover. There's also some kind of relationship when the offense has more penalties. It's interesting to me because I would've figured penalties and turnovers would affect both sides of the ball not just one. 
 
 ```{r}
-logs |> filter(game_type == TeamScore-OppoentScore < 7, game_type != 'Close') |> distinct(home, play_type)
+close_games <- logs |> filter(Differential < 7)
 ```
 
 I'm lost on the last one. I'm not sure how to "define" close games. Because I would define a game that is decided by 7 points or less a close game. I'm just not sure how to do that. I did look at the code block from the basketball one we did and played around with different variables but I'm still not sure. Pls help.
+
+
 

@@ -11,11 +11,12 @@ library(tidyverse)
 
 We'll want to start with 2023 match data, which is located in [this GitHub repository](https://github.com/dwillis/NCAAWomensSoccerData). We can load the match data directly from GitHub using `read_csv`:
 
+```{r}
+matches_2022 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2022.csv")
+```
 
 ```{r}
 matches_2023 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
-
-matches_2022 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2022.csv")
 ```
 
 Let's take a look at this data to see what it contains, using `head` and `glimpse`:
@@ -166,3 +167,34 @@ summary(net)
 (0.232868*11)+-2.833383
 ```
 Okay, I just kind of plugged in some columns that would work so I looked at shot attempts. I realized as I was doing that some teams that are more aggressive on defense tend to great more offensive plays. So, if I'm reading it correctly, Maryland shouldn't have won the Navy game based on shot attempts. I think it's interesting to look at how many attempts a team is actually taking to see if they are more likely to win games.
+
+### Maryland Model (Residuals) 
+
+```{r}
+matches_2023 <- matches_2023 |>
+  mutate(differential = team_score - opponent_score)
+```
+
+```{r}
+fit2 <- lm(differential ~ so_g + defensive_so_g, data = matches_2023)
+summary(fit2)
+```
+
+
+```{r}
+matches_2023 <- matches_2023 |> mutate(predicted = predict(fit2), residuals = residuals (fit2))
+```
+
+
+```{r}
+big_ten = c('Wisconsin Badgers', 'Maryland Terrapins, Terps', 'Michigan Wolverines', 'Rutgers Scarlet Knights', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Penn St. Nittany Lions', 'Minnesota Golden Gophers', 'Illinois Fighting Illini', 'Ohio St. Buckeyes', 'Northwestern Wildcats', 'Michigan St. Spartans', 'Purdue Boilermakers')
+```
+
+```{r}
+matches_2023 |>  arrange(residuals) |> select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g,differential, predicted, residuals)
+```
+
+```{r}
+matches_2023 |> filter(team %in% big_ten, outcome == 'Draw') |>  arrange(residuals) |> select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g, predicted, residuals)
+```
+
