@@ -1,1 +1,34 @@
+```{r}
+library(tidyverse)
+```
+```{r}
+volleyball <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
+```
+```{r}
+volleyball <- glimpse(volleyball)
+```
+I'm not gonna lie, I don't know what is going on but I'll do my best 
+
+```{r}
+permatch <- volleyball |> 
+  mutate(
+    ptspermatch = pts/match,
+    assistspermatch = assists/match,
+    team_scorepermatch = team_score/match
+  ) |>
+  select(Match, Team, Conference, pts, assists, team_score)
+```
+
+
+
+```{r}
+teamzscore <- perset |>
+  group_by(??????) |> 
+  mutate(
+    killszscore = as.numeric(scale(?????perset, center = TRUE, scale = TRUE)),
+    aceszscore = as.numeric(scale(????perset, center = TRUE, scale = TRUE)),
+    digszscore = as.numeric(scale(????perset, center = TRUE, scale = TRUE)),
+    TotalZscore = ?????zscore + ????zscore + ????zscore
+  ) |> ungroup() 
+```
 
