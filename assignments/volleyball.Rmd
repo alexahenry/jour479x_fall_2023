@@ -9,27 +9,72 @@ glimpse(vbmatches_2023)
 ```
 I'm not gonna lie, I don't know what is going on but I'll do my best 
 
+Before
 ```{r}
 perset <- vbmatches_2023 |> 
   mutate(
     ptsperset = pts/s,
     hit_pctperset = hit_pct/s,
-    defensive_hit_pctperset = defensive_hit_pct/s,
-    b_errperset = b_err/s
+    defensive_hit_pctperset = defensive_hit_pct/s
   ) |>
-  select(team, opponent, hit_pct, pts, defensive_hit_pct, b_err)
+  select(team, opponent, hit_pctperset, ptsperset, defensive_hit_pctperset)
 ```
 Okay, so I added opponent because I feel like some teams from match run different defenses/offenses so depending on the night, a team's performance can be impacted. For example, Pittsburgh hit a .559 against Montana. Either Pitt was just hitting that well that day or Montana really had zero block on Pitt. 
 
+I'm making a new block of code so you can see what I did before and after. 
 
+After
+```{r}
+perset <- vbmatches_2023 |> 
+  mutate(
+    killsperset = kills/s,
+    digsperset = digs/s,
+    total_attacksperset = total_attacks/s
+  ) |>
+  select(team, opponent, killsperset, digsperset, total_attacksperset)
+```
+
+
+Before
 ```{r}
 teamzscore <- perset |>
-  group_by(team) |> 
+  group_by(team, opponent) |> 
   mutate(
     ptszscore = as.numeric(scale(ptsperset, center = TRUE, scale = TRUE)),
     hit_pctzscore = as.numeric(scale(hit_pctperset, center = TRUE, scale = TRUE)),
     defensive_hit_pctzscore = as.numeric(scale(defensive_hit_pctperset, center = TRUE, scale = TRUE)),
     TotalZscore = ptszscore + hit_pctzscore + defensive_hit_pctzscore
-  ) |> ungroup() 
+  ) |> ungroup() |> na.omit(NaN)
+```
+I found it interesting that there was a lot of NA. So I'll take it as the metrics I used weren't as good. I think this only for this season so maybe adding last season would make the metrics a little better. I also don't know if Na is a good thing or bad thing, I'm not sure if I'm using the right metrics for a zscore at least. 
+
+
+After
+```{r}
+teamzscore <- perset |>
+  group_by(team, opponent) |> 
+  mutate(
+    killszscore = as.numeric(scale(killsperset, center = TRUE, scale = TRUE)),
+    digszscore = as.numeric(scale(digsperset, center = TRUE, scale = TRUE)),
+    total_attackszscore = as.numeric(scale(total_attacksperset, center = TRUE, scale = TRUE)),
+    TotalZscore = killszscore + digszscore + total_attackszscore
+  ) |> ungroup()
 ```
 
+
+```{r}
+head(teamzscore)
+```
+
+```{r}
+teamzscore |> arrange(desc(teamzscore))
+```
+
+```{r}
+teamzscore |> 
+  filter(opponent == "Maryland") |> 
+  select(team, TotalZscore)
+```
+I'm having a little trouble here so I might switch the metrics back to see if maybe it's the metrics that are taking out some teams? I'm not sure why some teams are being deleted off the table/some teams aren't showing up on the team side but they are for opponent. I changed the metrics and I got the same result. 
+
+I filtered the table for just Maryland and it didn't come up but once I did it for opponent it filtered all of Maryland's games. I'm also getting NaN again and I even changed the metrics so, I'm confused as to why that's happening. But some teams, like I did Xavier in the team filter, that will filter in team. So yeah, help pls because I feel like I messed this up. 
