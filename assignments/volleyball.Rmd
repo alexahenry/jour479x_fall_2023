@@ -2,33 +2,34 @@
 library(tidyverse)
 ```
 ```{r}
-volleyball <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
+vbmatches_2023 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
 ```
 ```{r}
-volleyball <- glimpse(volleyball)
+glimpse(vbmatches_2023)
 ```
 I'm not gonna lie, I don't know what is going on but I'll do my best 
 
 ```{r}
-permatch <- volleyball |> 
+perset <- vbmatches_2023 |> 
   mutate(
-    ptspermatch = pts/match,
-    assistspermatch = assists/match,
-    team_scorepermatch = team_score/match
+    ptsperset = pts/s,
+    hit_pctperset = hit_pct/s,
+    defensive_hit_pctperset = defensive_hit_pct/s,
+    b_errperset = b_err/s
   ) |>
-  select(Match, Team, Conference, pts, assists, team_score)
+  select(team, opponent, hit_pct, pts, defensive_hit_pct, b_err)
 ```
-
+Okay, so I added opponent because I feel like some teams from match run different defenses/offenses so depending on the night, a team's performance can be impacted. For example, Pittsburgh hit a .559 against Montana. Either Pitt was just hitting that well that day or Montana really had zero block on Pitt. 
 
 
 ```{r}
 teamzscore <- perset |>
-  group_by(??????) |> 
+  group_by(team) |> 
   mutate(
-    killszscore = as.numeric(scale(?????perset, center = TRUE, scale = TRUE)),
-    aceszscore = as.numeric(scale(????perset, center = TRUE, scale = TRUE)),
-    digszscore = as.numeric(scale(????perset, center = TRUE, scale = TRUE)),
-    TotalZscore = ?????zscore + ????zscore + ????zscore
+    ptszscore = as.numeric(scale(ptsperset, center = TRUE, scale = TRUE)),
+    hit_pctzscore = as.numeric(scale(hit_pctperset, center = TRUE, scale = TRUE)),
+    defensive_hit_pctzscore = as.numeric(scale(defensive_hit_pctperset, center = TRUE, scale = TRUE)),
+    TotalZscore = ptszscore + hit_pctzscore + defensive_hit_pctzscore
   ) |> ungroup() 
 ```
 
