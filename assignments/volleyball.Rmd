@@ -4,10 +4,20 @@ library(tidyverse)
 ```{r}
 vbmatches_2023 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
 ```
+
+
+```{r}
+goodvb <- vbmatches_2023 |> 
+  select(team, kills, digs, hit_pct)
+```
+
 ```{r}
 glimpse(vbmatches_2023)
 ```
 I'm not gonna lie, I don't know what is going on but I'll do my best 
+```{r}
+
+```
 
 Before
 ```{r}
@@ -29,9 +39,19 @@ perset <- vbmatches_2023 |>
   mutate(
     killsperset = kills/s,
     digsperset = digs/s,
-    total_attacksperset = total_attacks/s
+    hit_pctperset = total_attacks/s
   ) |>
-  select(team, opponent, killsperset, digsperset, total_attacksperset)
+  select(team, killsperset, digsperset, hit_pctperset )
+```
+
+```{r}
+persettotals <- goodvb |> 
+  group_by(team) |> 
+  summarise(
+    KillspersetAvg = mean(kills), 
+    digspersetAvg = mean(digs), 
+    hit_pctpersetAvg = mean(hit_pct)
+    ) 
 ```
 
 
@@ -52,12 +72,12 @@ I found it interesting that there was a lot of NA. So I'll take it as the metric
 After
 ```{r}
 teamzscore <- perset |>
-  group_by(team, opponent) |> 
+  group_by(team) |> 
   mutate(
     killszscore = as.numeric(scale(killsperset, center = TRUE, scale = TRUE)),
     digszscore = as.numeric(scale(digsperset, center = TRUE, scale = TRUE)),
-    total_attackszscore = as.numeric(scale(total_attacksperset, center = TRUE, scale = TRUE)),
-    TotalZscore = killszscore + digszscore + total_attackszscore
+    hit_pctzscore = as.numeric(scale(hit_pctperset, center = TRUE, scale = TRUE)),
+    TotalZscore = killszscore + digszscore + hit_pctzscore
   ) |> ungroup()
 ```
 
@@ -67,14 +87,18 @@ head(teamzscore)
 ```
 
 ```{r}
-teamzscore |> arrange(desc(teamzscore))
+teamzscore |> arrange(desc(TotalZscore))
 ```
 
 ```{r}
 teamzscore |> 
-  filter(opponent == "Maryland") |> 
+  filter(team == "Maryland Terrapins, Terps") |> 
+  arrange(desc(TotalZscore)) |>
   select(team, TotalZscore)
 ```
 I'm having a little trouble here so I might switch the metrics back to see if maybe it's the metrics that are taking out some teams? I'm not sure why some teams are being deleted off the table/some teams aren't showing up on the team side but they are for opponent. I changed the metrics and I got the same result. 
 
 I filtered the table for just Maryland and it didn't come up but once I did it for opponent it filtered all of Maryland's games. I'm also getting NaN again and I even changed the metrics so, I'm confused as to why that's happening. But some teams, like I did Xavier in the team filter, that will filter in team. So yeah, help pls because I feel like I messed this up. 
+
+
+Update: I fixed the notebook and I didn't have NaN's anymore yay and I was able to find Maryland.
