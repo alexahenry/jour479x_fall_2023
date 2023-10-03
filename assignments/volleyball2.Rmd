@@ -1,0 +1,57 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+vbmatches_2023 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
+```
+
+```{r}
+glimpse(vbmatches_2023)
+```
+
+```{r}
+goodvb <- vbmatches_2023 |> 
+  select(team, kills, digs, hit_pct, defensive_kills, defensive_digs, defensive_hit_pct, b_err, defensive_b_err)
+```
+
+```{r}
+teamtotals <- goodvb |> 
+  group_by(team) |> 
+  summarise(
+    killsAvg = mean(kills), 
+    digsAvg = mean(digs), 
+    hit_pctAvg = mean(hit_pct),
+    b_errAvg = mean(b_err),
+    defensive_killsAvg = mean(defensive_kills),
+    defensive_digsAvg = mean(defensive_digs),
+    defensive_hit_pctAvg = mean(defensive_hit_pct),
+    defensive_b_errAvg = mean(defensive_b_err)
+    ) 
+```
+
+
+```{r}
+teamzscore <- teamtotals |> 
+  mutate(
+    killszscore = as.numeric(scale(killsAvg, center = TRUE, scale = TRUE)),
+    digsZscore = as.numeric(scale(digsAvg, center = TRUE, scale = TRUE)),
+    hit_pctZscore = as.numeric(scale(hit_pctAvg, center = TRUE, scale = TRUE)),
+    b_errZScore = as.numeric(scale(b_errAvg, center = TRUE, scale = TRUE)) * -1,
+    defensive_killsZscore = as.numeric(scale(defensive_killsAvg, center = TRUE, scale = TRUE)) *-1,
+    defensive_hit_pctZscore = as.numeric(scale(defensive_hit_pctAvg, center = TRUE, scale = TRUE)) *-1,
+    defensive_b_errZscore = as.numeric(scale(defensive_b_errAvg, center = TRUE, scale = TRUE)) * -1, 
+    TotalZscore = killszscore + digsZscore + hit_pctZscore + b_errZScore + defensive_killsZscore + defensive_hit_pctZscore + defensive_b_errZscore
+  )  
+```
+
+
+```{r}
+head(teamzscore)
+```
+
+```{r}
+teamzscore |> arrange(desc(b_errZScore))
+```
+### Assignment
+

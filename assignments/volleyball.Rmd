@@ -102,3 +102,8 @@ I filtered the table for just Maryland and it didn't come up but once I did it f
 
 
 Update: I fixed the notebook and I didn't have NaN's anymore yay and I was able to find Maryland.
+
+### Assignment 
+
+Based on the metrics I used and even though I didn't calculate per set, it looks like Texas Southern is the best team. Which is interesting because they are 2-16 overall, they are hiting below .200 as a team. 
+

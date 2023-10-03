@@ -1,0 +1,76 @@
+```{r}
+library(tidyverse)
+library(cluster)
+
+set.seed(1234)
+```
+
+```{r}
+players <- read_csv("https://dwillis.github.io/sports-data-files/players20.csv")
+```
+
+```{r}
+playersselected <- players |>
+  filter(MP>0) |> filter(Pos == "F") |>
+  select(Player, Team, Pos, MP, `FG%`, TRB, BLK, TOV, PTS) |>
+  na.omit()
+```
+
+```{r}
+playersscaled <- playersselected |>
+  select(MP, `FG%`, TRB, BLK, TOV, PTS) |>
+  mutate_all(scale) |>
+  na.omit()
+```
+
+```{r}
+# function to compute total within-cluster sum of square
+wss <- function(k) {
+  kmeans(playersscaled, k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+
+plot(k.values, wss_values,
+       type="b", pch = 19, frame = FALSE,
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+```
+Pick numbers that are closest to the "elbow"(where the plot is flattening out)
+
+
+```{r}
+k8 <- kmeans(playersscaled, centers = 8, nstart = 25)
+```
+
+```{r}
+k8
+```
+
+
+```{r}
+playercluster <- data.frame(playersselected, k8$cluster)
+```
+data.frame = create a data frame
+
+```{r}
+cm <- playercluster |> filter(Player == "Jalen Smith")
+
+cm
+```
+```{r}
+ggplot() +
+  geom_point(data=playercluster, aes(x=MP, y=TRB, color=k8.cluster)) +
+  geom_point(data=cm, aes(x=MP, y=TRB), color="red")
+```
+
+```{r}
+big10 <- c("Nebraska Cornhuskers", "Iowa Hawkeyes", "Minnesota Golden Gophers", "Illinois Fighting Illini", "Northwestern Wildcats", "Wisconsin Badgers", "Indiana Hoosiers", "Purdue Boilermakers", "Ohio State Buckeyes", "Michigan Wolverines", "Michigan State Spartans", "Penn State Nittany Lions", "Rutgers Scarlet Knights", "Maryland Terrapins")
+
+playercluster |> filter(k8.cluster == 2) |> filter(Team %in% big10) |> arrange(desc(MP))
+```
+
