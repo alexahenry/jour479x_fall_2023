@@ -55,3 +55,8 @@ teamzscore |> arrange(desc(b_errZScore))
 ```
 ### Assignment
 
+Maryland head coach, Adam Huges wants to focus on having a better offense this year but it seems to cost them on the defensive side. Maryland falls among weaker overall programs when it comes to blocking. 
+
+Overall, Maryland has made many strides to become a program that can be in the same conversations like Purdue and Illinois within the Big Ten. Their focus shifted to create more offensive production this year however, they are under preforming on the defensive side. They land among programs like Alcorn and Wichita State when it comes to blocking errors. 
+
+For an up and coming Terrapin team, that's not an easy place to be. Even though they have individual leaders for blocking like Eva Roherboch and Anastasia Russ but as a team, they are tooled a lot. This team is young and there is still time to improve on the defensive end but it needs to happen quickly if they want a chance at competing with teams like Penn State, Nebraska, and Wisconsin. 
