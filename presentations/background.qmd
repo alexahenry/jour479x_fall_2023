@@ -1,0 +1,8 @@
+```{r}
+library(tidyverse)
+```
+```{r}
+volleyball <- read_csv("https://github.com/dwillis/NCAAWomensVolleyballData/blob/main/data/ncaa_womens_volleyball_playerstats_2023.csv")
+```
+I think this is a good starting point. I went ahead and wanted to go with the see where most players are from. Unfortunately, I kept hitting road blocks where the data didn't include the player's hometowns so if there's a way to scrape that from the roasters that would be good but I think comparing stats to where that person is from would be interesting. I also landed on this question because the Maryland v. Indiana game had a lot of players from California that played together in club/high school. 
+I would like to look at this seasons players if possible just because of graduations and transfers. I might have to add the stats to see what kind of stats those players are putting up from those places. I also didn't find much work on players and their hometowns. I mainly found "best players from colleges". 
