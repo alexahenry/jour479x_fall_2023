@@ -6,3 +6,46 @@ volleyball <- read_csv("https://github.com/dwillis/NCAAWomensVolleyballData/blob
 ```
 I think this is a good starting point. I went ahead and wanted to go with the see where most players are from. Unfortunately, I kept hitting road blocks where the data didn't include the player's hometowns so if there's a way to scrape that from the roasters that would be good but I think comparing stats to where that person is from would be interesting. I also landed on this question because the Maryland v. Indiana game had a lot of players from California that played together in club/high school. 
 I would like to look at this seasons players if possible just because of graduations and transfers. I might have to add the stats to see what kind of stats those players are putting up from those places. I also didn't find much work on players and their hometowns. I mainly found "best players from colleges". 
+
+### 2023-10-14
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+vb_rosters23 <- read.csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+```
+
+```{r}
+head(vb_rosters23)
+```
+
+```{r}
+vb_rosters23 |>
+  separate (Hometown, c("city", "state"), extra="merge")
+```
+so from this I also noticed that in some of the rows, the city and state isn't completely separated. Winter Springs, Florida is separated. This could be because each roster may use a different way to write rosters. 
+
+```{r}
+vb_towns23 <- vb_rosters23 |>
+  separate (Hometown, c("city", "state"), extra="merge")
+```
+okay I might be on to something. I went back and arranged it by hometown the way it was written so the new dataframe is arranged in alphabetical order which, many of those players are from the same state. It's not efficient but it's something. I tried group by position and I found that the way some of the positions are written are also not consistent so I'm not sure if position would be a good way to group them. 
+
+I'm also struggling on how to graph this. There's a lot of them, so I'm not sure what would be the best way to do it? Do I make separate charts and maybe compare them from there? For that I was thinking, separating by regions on the map so giving the chart.
+
+```{r}
+ggplot() + 
+  geom_bar(data=vb_towns23, aes(x=state)) + coord_flip()
+```
+Not gonna, lie that looks awful. If there's a way to group by certain rows, which I think there is, would love to know that because then I can seperate them. 
+```{r}
+vb_towns23 <- vb_rosters23 |>
+  group_by(Hometown, Position) |>
+arrange(desc(Hometown))
+```
+
+
