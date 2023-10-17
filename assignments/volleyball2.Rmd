@@ -55,3 +55,121 @@ teamzscore |> arrange(desc(b_errZScore))
 ```
 ### Assignment
 
+```{r}
+library(tidyverse)
+```
+
+```{r}
+vollplayers <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+```
+
+```{r}
+voll_hometowns <- vollplayers |> 
+  separate(Hometown, c('town', 'state'), sep=",")
+```
+### Dumbbell and Lollipop charts
+```{r}
+library(tidyverse)
+library(ggalt)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/ncaa_womens_volleyball_matchstats_2022.csv")
+```
+
+```{r}
+big10 <- c("Nebraska Cornhuskers", "Iowa Hawkeyes", "Minnesota Golden Gophers", "Illinois Fighting Illini", "Northwestern Wildcats", "Wisconsin Badgers", "Indiana Hoosiers", "Purdue Boilermakers", "Ohio St. Buckeyes", "Michigan Wolverines", "Michigan St. Spartans", "Penn St. Nittany Lions", "Rutgers Scarlet Knights", "Maryland Terrapins, Terps")
+
+errors <- logs |>
+  filter(team %in% big10) |> 
+  group_by(team) |> 
+  summarise(
+    total_errors = sum(errors), 
+    opp_errors = sum(defensive_errors))
+```
+
+x=end is opponent errors 
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=team, x=total_errors, xend=opp_errors),
+    colour = "black",
+    colour_x = "blue",
+    colour_xend = "red")
+```
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=team, x=opp_errors, xend=total_errors),
+    size = 1.5,
+    color = "black",
+    colour_x = "blue",
+    colour_xend = "red") + 
+  theme_minimal()
+```
+
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors, xend=total_errors),
+    linewidth = 2,
+    color = "black",
+    colour_x = "blue",
+    colour_xend = "red") + 
+  theme_minimal()
+```
+###  Lollipop charts
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=team, x=opp_errors), 
+    horizontal = TRUE
+    )
+```
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Maryland, Rutgers force more errors", y="team")
+```
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Maryland, Rutgers force more errors", y="team")
+```
+
+```{r}
+md <- errors |> filter(team == "Maryland Terrapins, Terps")
+```
+
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors), 
+    horizontal = TRUE
+    ) + 
+  geom_lollipop(
+    data=md,
+    aes(y=team, x=opp_errors),
+    horizontal = TRUE,
+    color = "red"
+  ) + 
+  theme_minimal() + 
+  labs(title = "Maryland forced the most errors among Big Ten teams", y="team")
+```
+

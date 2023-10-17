@@ -1,0 +1,44 @@
+Field Hockey - scatter plots
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/fieldhockey22.csv")
+```
+
+```{r}
+winlosslogs <- logs |> 
+  mutate(
+    winloss = case_when(
+      grepl("W", result) ~ 1, 
+      grepl("L", result) ~ 0)
+)
+```
+
+```{r}
+goals_wins <- winlosslogs |> 
+  group_by(team) |> 
+  summarise(
+    wins = sum(winloss), 
+    total_goals = sum(goals)
+    ) |> na.omit()
+```
+na.omit is taking out any data that there isn't data for 
+
+```{r}
+ggplot() + geom_point(data=goals_wins, aes(x=total_goals, y=wins))
+```
+
+```{r}
+ggplot() + 
+  geom_point(data=goals_wins, aes(x=total_goals, y=wins)) +
+  geom_smooth(data=goals_wins, aes(x=total_goals, y=wins), method="lm")
+```
+
+```{r}
+fit <- lm(wins ~ total_goals, data = goals_wins)
+summary(fit)
+```
+
