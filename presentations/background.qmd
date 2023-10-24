@@ -1,0 +1,106 @@
+```{r}
+library(tidyverse)
+```
+```{r}
+volleyball <- read_csv("https://github.com/dwillis/NCAAWomensVolleyballData/blob/main/data/ncaa_womens_volleyball_playerstats_2023.csv")
+```
+I think this is a good starting point. I went ahead and wanted to go with the see where most players are from. Unfortunately, I kept hitting road blocks where the data didn't include the player's hometowns so if there's a way to scrape that from the roasters that would be good but I think comparing stats to where that person is from would be interesting. I also landed on this question because the Maryland v. Indiana game had a lot of players from California that played together in club/high school. 
+I would like to look at this seasons players if possible just because of graduations and transfers. I might have to add the stats to see what kind of stats those players are putting up from those places. I also didn't find much work on players and their hometowns. I mainly found "best players from colleges". 
+
+### 2023-10-14
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+vb_rosters23 <- read.csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+```
+
+```{r}
+head(vb_rosters23)
+```
+
+```{r}
+vb_rosters23 |>
+  separate (Hometown, c("city", "state"), extra="merge")
+```
+so from this I also noticed that in some of the rows, the city and state isn't completely separated. Winter Springs, Florida is separated. This could be because each roster may use a different way to write rosters. 
+
+```{r}
+vb_towns23 <- vb_rosters23 |>
+  separate (Hometown, c("city", "state"), extra="merge")
+```
+okay I might be on to something. I went back and arranged it by hometown the way it was written so the new dataframe is arranged in alphabetical order which, many of those players are from the same state. It's not efficient but it's something. I tried group by position and I found that the way some of the positions are written are also not consistent so I'm not sure if position would be a good way to group them. 
+
+I'm also struggling on how to graph this. There's a lot of them, so I'm not sure what would be the best way to do it? Do I make separate charts and maybe compare them from there? For that I was thinking, separating by regions on the map so giving the chart.
+
+```{r}
+ggplot() + 
+  geom_bar(data=vb_towns23, aes(x=state)) + coord_flip()
+```
+Not gonna, lie that looks awful. If there's a way to group by certain rows, which I think there is, would love to know that because then I can seperate them. 
+```{r}
+vb_towns23 <- vb_rosters23 |>
+  group_by(Hometown, Position) |>
+arrange(desc(Hometown))
+```
+ 
+###Refining Update 
+
+```{r}
+library(tidyverse)
+```
+```{r}
+volleyball <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/rosters_2023-24_standard.csv")
+```
+```{r}
+head(volleyball)
+```
+```{r}
+volltown <- volleyball |>
+  separate (hometown, c("city", "state"), extra="merge") |>
+  filter(!is.na(state)) |>
+  select(team, city, state, name)
+```
+I am noticing that some of the hometowns are spilt still. So starting with Texas A&M Ifenna Cos-Okpalla, she's from Flower Mound, TX. When I do the separate, it becomes Hometown: Flower and then State: Mound, TX. It only does that for the two name hometowns.
+
+```{r}
+volltown |> 
+  group_by(state) |>
+  summarise(
+    states = n()
+  )
+```
+It appears here that R may not like the seperate function. I have over 1,600 results due to R duplicating entries. So I'll take the seperate out and see if that's better considering I'm only looking at state. 
+
+```{r}
+volltown <- volleyball |>
+  filter(!is.na(state)) |>
+  select(team, city, state, name)
+```
+
+```{r}
+volltown |> 
+  group_by(state) |>
+  summarise(
+    states = n()
+  )
+```
+This looks better. However, I have the international places in there so I'll make a list with all the states plus D.C. (as much as that's a pain). 
+
+```{r}
+ustates <- c("Alabama", "Alaska", "Arizona”", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming")
+
+volltown |> 
+  filter(state %in% ustates) |>
+  group_by(state) |>
+  summarise(
+    states = n()
+  ) |> arrange(desc(states))
+```
+Okay so I think I'm getting somewhere. I found that 780 players in Division I come from Texas. So arguably, you can say the best players come from Texas. Behind them is California. Makes sense, you can play volleyball all year around in those two states and both of those states love volleyball at any level. What was surprising to me was New York, Pennsylvania and Ohio. Maybe not so much New York because it's a big state but I'm surprised because I didn't think New York was a huge volleyball state or had a huge volleyball culture. Same thing with Ohio. Pennsylvania, I'm more surprised about the amount that are from there. There are not a lot of clubs in PA unless you're Pittsburgh. Russ Rose's son just started a club in State College. Now, that I'm writing this I forgot one of the biggest clubs in PA is Spooky Nook (I coached for them for two years) and East Coast Power. They have a huge feeder program into the high schools and have a lot of girls that get recruited. Only 81 from Nebraska and 76 from Maryland...again interesting. 
+
+I'm not 100% sure what to use for a visualization but maybe something where I can look at the numbers by region? Let me know. 

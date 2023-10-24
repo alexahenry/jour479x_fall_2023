@@ -1,0 +1,127 @@
+```{r}
+library(waffle)
+```
+
+```{r}
+md <- c("Rushing"=206, "Passing"=275)
+vt <- c("Rushing"=122, "Passing"=137)
+```
+
+```{r}
+waffle(
+        md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+)
+```
+
+```{r}
+passing <- c("Maryland"=275, "Virgina Tech"=137)
+
+waffle(
+        md, 
+        rows = 10, 
+        title="Maryland vs Virginia Tech: passing", 
+        xlab="1 square = 1 yard", 
+        colors = c("red", "black")
+)
+```
+```{r}
+iron(
+ waffle(md/2, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(vt/2, 
+        rows = 10, 
+        title="Virginia Tech's offense", 
+        xlab="1 square = 1 yard",
+        colors = c("orange", "brown", "white")
+        )
+)
+```
+
+
+```{r}
+md <- c("Rushing"=206, "Passing"=275)
+vt <- c("Rushing"=122, "Passing"=137, 222)
+
+iron(
+ waffle(md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(vt, 
+        rows = 10, 
+        title="Virginia Tech's offense", 
+        xlab="1 square = 1 yard",
+        colors = c("orange", "brown", "white")
+        )
+)
+```
+```{r}
+md <- c("Rushing"=206, "Passing"=275)
+vt <- c("Rushing"=122, "Passing"=137, 222)
+
+iron(
+ waffle(md/2, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(vt/2, 
+        rows = 10, 
+        title="Virginia Tech's offense", 
+        xlab="1 square = 1 yard",
+        colors = c("orange", "brown", "white")
+        )
+)
+```
+
+#### Line Charts
+```{r}
+library(tidyverse)
+install.packages("ggplot2")
+library("ggplot2")
+```
+
+```{r}
+logs <- read.csv("https://dwillis.github.io/sports-data-files/logs22.csv")
+```
+
+```{r}
+nu <- logs |> filter(team == "Nebraska")
+```
+
+```{r}
+head(nu)
+```
+```{r}
+library(ggplot2)
+```
+
+```{r}
+ggplot() + geom_line(data=nu, aes(x=Date, y=TeamFGPCT))
+```
+
+```{r}
+ggplot() + 
+  geom_line(data=nu, aes(x=Date,y=TeamFGPCT)) + scale_y_continuous(limits = c(0, .7))
+```
+
+```{r}
+msu <- logs |> filter(Team == "Michigan State")
+
+ggplot() + 
+  geom_line(data=msu, aes(x=Date, y=TeamFGPCT), color="red") + 
+  geom_line(data=msu, aes(x=Date, y=TeamFGPCT), color="green") +
+  scale_y_continuous(limits = c(0, .7))
+```
+
