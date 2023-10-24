@@ -1,0 +1,49 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 20, prob = .317)
+
+table(simulations)
+```
+n = 1000 simulations. How we read it:  how often it happens and how likely it is to occur. 
+
+Men's basketball 
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 15, prob = .326)
+
+hist(simulations)
+```
+```{r}
+table(simulations)
+```
+
+Lacrosse
+```{r}
+library(dplyr)
+
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 1, prob = .377)
+
+four_in_a_row <- mean(simulations == 1 & lead(simulations, 1) == 1 & lead(simulations, 2) == 1 & lead(simulations, 3) == 1)
+
+odds <- 1/four_in_a_row
+```
+Breanna Stewart
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 17, prob = .465)
+
+hist(simulations)
+```
+```{r}
+table(simulations)
+```
+
