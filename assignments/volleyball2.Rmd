@@ -11,28 +11,28 @@ glimpse(vbmatches_2023)
 ```
 
 ```{r}
-goodvb <- vbmatches_2023 |> 
+goodvb <- vbmatches_2023 |>
   select(team, kills, digs, hit_pct, defensive_kills, defensive_digs, defensive_hit_pct, b_err, defensive_b_err)
 ```
 
 ```{r}
-teamtotals <- goodvb |> 
-  group_by(team) |> 
+teamtotals <- goodvb |>
+  group_by(team) |>
   summarise(
-    killsAvg = mean(kills), 
-    digsAvg = mean(digs), 
+    killsAvg = mean(kills),
+    digsAvg = mean(digs),
     hit_pctAvg = mean(hit_pct),
     b_errAvg = mean(b_err),
     defensive_killsAvg = mean(defensive_kills),
     defensive_digsAvg = mean(defensive_digs),
     defensive_hit_pctAvg = mean(defensive_hit_pct),
     defensive_b_errAvg = mean(defensive_b_err)
-    ) 
+    )
 ```
 
 
 ```{r}
-teamzscore <- teamtotals |> 
+teamzscore <- teamtotals |>
   mutate(
     killszscore = as.numeric(scale(killsAvg, center = TRUE, scale = TRUE)),
     digsZscore = as.numeric(scale(digsAvg, center = TRUE, scale = TRUE)),
@@ -40,7 +40,7 @@ teamzscore <- teamtotals |>
     b_errZScore = as.numeric(scale(b_errAvg, center = TRUE, scale = TRUE)) * -1,
     defensive_killsZscore = as.numeric(scale(defensive_killsAvg, center = TRUE, scale = TRUE)) *-1,
     defensive_hit_pctZscore = as.numeric(scale(defensive_hit_pctAvg, center = TRUE, scale = TRUE)) *-1,
-    defensive_b_errZscore = as.numeric(scale(defensive_b_errAvg, center = TRUE, scale = TRUE)) * -1, 
+    defensive_b_errZscore = as.numeric(scale(defensive_b_errAvg, center = TRUE, scale = TRUE)) * -1,
     TotalZscore = killszscore + digsZscore + hit_pctZscore + b_errZScore + defensive_killsZscore + defensive_hit_pctZscore + defensive_b_errZscore
   )  
 ```
@@ -55,8 +55,120 @@ teamzscore |> arrange(desc(b_errZScore))
 ```
 ### Assignment
 
-Maryland head coach, Adam Huges wants to focus on having a better offense this year but it seems to cost them on the defensive side. Maryland falls among weaker overall programs when it comes to blocking. 
+```{r}
+library(tidyverse)
+```
 
-Overall, Maryland has made many strides to become a program that can be in the same conversations like Purdue and Illinois within the Big Ten. Their focus shifted to create more offensive production this year however, they are under preforming on the defensive side. They land among programs like Alcorn and Wichita State when it comes to blocking errors. 
+```{r}
+vollplayers <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+```
 
-For an up and coming Terrapin team, that's not an easy place to be. Even though they have individual leaders for blocking like Eva Roherboch and Anastasia Russ but as a team, they are tooled a lot. This team is young and there is still time to improve on the defensive end but it needs to happen quickly if they want a chance at competing with teams like Penn State, Nebraska, and Wisconsin. 
+```{r}
+voll_hometowns <- vollplayers |>
+  separate(Hometown, c('town', 'state'), sep=",")
+```
+### Dumbbell and Lollipop charts
+```{r}
+library(tidyverse)
+library(ggalt)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/ncaa_womens_volleyball_matchstats_2022.csv")
+```
+
+```{r}
+big10 <- c("Nebraska Cornhuskers", "Iowa Hawkeyes", "Minnesota Golden Gophers", "Illinois Fighting Illini", "Northwestern Wildcats", "Wisconsin Badgers", "Indiana Hoosiers", "Purdue Boilermakers", "Ohio St. Buckeyes", "Michigan Wolverines", "Michigan St. Spartans", "Penn St. Nittany Lions", "Rutgers Scarlet Knights", "Maryland Terrapins, Terps")
+
+errors <- logs |>
+  filter(team %in% big10) |>
+  group_by(team) |>
+  summarise(
+    total_errors = sum(errors),
+    opp_errors = sum(defensive_errors))
+```
+
+x=end is opponent errors
+```{r}
+ggplot() +
+  geom_dumbbell(
+    data=errors,
+    aes(y=team, x=total_errors, xend=opp_errors),
+    colour = "black",
+    colour_x = "blue",
+    colour_xend = "red")
+```
+```{r}
+ggplot() +
+  geom_dumbbell(
+    data=errors,
+    aes(y=team, x=opp_errors, xend=total_errors),
+    size = 1.5,
+    color = "black",
+    colour_x = "blue",
+    colour_xend = "red") +
+  theme_minimal()
+```
+
+```{r}
+ggplot() +
+  geom_dumbbell(
+    data=errors,
+    aes(y=reorder(team, opp_errors), x=opp_errors, xend=total_errors),
+    linewidth = 2,
+    color = "black",
+    colour_x = "blue",
+    colour_xend = "red") +
+  theme_minimal()
+```
+###  Lollipop charts
+```{r}
+ggplot() +
+  geom_lollipop(
+    data=errors,
+    aes(y=team, x=opp_errors),
+    horizontal = TRUE
+    )
+```
+
+```{r}
+ggplot() +
+  geom_lollipop(
+    data=errors,
+    aes(y=reorder(team, opp_errors), x=opp_errors),
+    horizontal = TRUE
+    ) + theme_minimal() +
+  labs(title = "Maryland, Rutgers force more errors", y="team")
+```
+
+```{r}
+ggplot() +
+  geom_lollipop(
+    data=errors,
+    aes(y=reorder(team, opp_errors), x=opp_errors),
+    horizontal = TRUE
+    ) + theme_minimal() +
+  labs(title = "Maryland, Rutgers force more errors", y="team")
+```
+
+```{r}
+md <- errors |> filter(team == "Maryland Terrapins, Terps")
+```
+
+
+```{r}
+ggplot() +
+  geom_lollipop(
+    data=errors,
+    aes(y=reorder(team, opp_errors), x=opp_errors),
+    horizontal = TRUE
+    ) +
+  geom_lollipop(
+    data=md,
+    aes(y=team, x=opp_errors),
+    horizontal = TRUE,
+    color = "red"
+  ) +
+  theme_minimal() +
+  labs(title = "Maryland forced the most errors among Big Ten teams", y="team")
+```

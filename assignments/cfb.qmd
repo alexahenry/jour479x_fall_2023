@@ -73,5 +73,155 @@ close_games <- logs |> filter(Differential < 7)
 
 I'm lost on the last one. I'm not sure how to "define" close games. Because I would define a game that is decided by 7 points or less a close game. I'm just not sure how to do that. I did look at the code block from the basketball one we did and played around with different variables but I'm still not sure. Pls help.
 
+### Bubble Charts 
 
+```{r}
+library(tidyverse)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/footballlogs22.csv")
+```
+
+```{r}
+winlosslogs <- logs |> 
+  mutate(
+    wins = case_when(
+      grepl("W", Outcome) ~ 1, 
+      grepl("L", Outcome) ~ 0)
+)
+```
+
+```{r}
+winlosslogs |> 
+  group_by(Team, Conference) |> 
+  summarise(
+    TotalPlays = sum(OffensivePlays), 
+    TotalYards = sum(OffensiveYards), 
+    DefensivePlays = sum(DefPlays), 
+    DefensiveYards = sum(DefYards), 
+    TotalWins = sum(wins)) |> 
+  mutate(
+    OffensiveYPP = TotalYards/TotalPlays, 
+    DefensiveYPP = DefensiveYards/DefensivePlays) -> ypp
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, aes(x=OffensiveYPP, y=DefensiveYPP)
+    )
+```
+
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins)
+    )
+```
+
+make it transparent
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins),
+    alpha = .3) + 
+  scale_size(range = c(3, 8), name="Wins")
+```
+
+big ten 
+
+```{r}
+bigten <- ypp |> filter(Conference == "Big Ten Conference")
+
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red")
+```
+
+```{r}
+ypp |> 
+  ungroup() |> 
+  summarise(
+    offense = mean(OffensiveYPP), 
+    defense = mean(DefensiveYPP)
+    )
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143)
+```
+
+load packages and library
+
+```{r}
+library(ggrepel)
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143) +
+  geom_text_repel(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, label=Team)
+  )
+```
+
+chart but with labels 
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143) + 
+  geom_text_repel(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, label=Team)
+  ) +
+  labs(title="Is Maryland moving up to the Big Ten's best?", subtitle="The Terps offense and defense puts it among ranked teams in the conference.", caption="Source: NCAA | By Derek Willis")  + theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+```
 
