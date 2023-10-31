@@ -98,6 +98,14 @@ vbpositions |>
 After some fixing, I got to my answer. I arranged by outsides just because they are the most dominant position. Oddly enough, the top ten from the first chart still dominate when it comes to Middles and Outsides however California has the most setters and opposites/right side hitters. These numbers might be skewed a little bit (not by much) because each team lists their positions differently so for the purposes of time, I did the most common listing. Some players hold two positions as well. 
 
 ```{r}
+top10positions <- vbpositions |>
+  group_by(state) |>
+  select(Outside, Middle, Setter, Opposite, `Libero/Defensive`) |>
+  arrange(desc(Outside)) |>
+  head(10)
+```
+
+```{r}
 ggplot() + 
   geom_lollipop(
     data=top10positions, 
