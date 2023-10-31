@@ -203,3 +203,99 @@ ggplot() +
   coord_flip()
 ```
 2nd half
+For the second visual, I'm going to play around with a scatter plot and a beeswarm plot. I'm going to look at the most positions by state. 
+
+```{r}
+vbpositions <- vbroasters23 |>
+  group_by(state, position) |>
+  filter(!is.na(state)) |>
+  summarise(
+    states = n()
+  )
+```
+
+```{r}
+vbpositions <- vbpositions |>
+  pivot_wider(names_from = position, values_from = states)
+```
+
+
+```{r}
+vbpositions |>
+  group_by(state) |>
+  select(Outside, Middle, Setter, Opposite, `Libero/Defensive`) |>
+  arrange(desc(Outside)) |>
+  top_n(10)
+```
+After some fixing, I got to my answer. I arranged by outsides just because they are the most dominant position. Oddly enough, the top ten from the first chart still dominate when it comes to Middles and Outsides however California has the most setters and opposites/right side hitters. These numbers might be skewed a little bit (not by much) because each team lists their positions differently so for the purposes of time, I did the most common listing. Some players hold two positions as well. 
+
+To make the chart, I'm going to stick with top ten. 
+
+```{r}
+top10positions <- vbpositions |>
+  group_by(state) |>
+  select(Outside, Middle, Setter, Opposite, `Libero/Defensive`) |>
+  arrange(desc(Outside)) |>
+  head(10)
+```
+
+```{r}
+library(tidyverse)
+library(ggbeeswarm)
+library(ggrepel)
+```
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+ggplot() + geom_beeswarm(data=top10positions, aes(x=state, y=Outside), color="grey")
+```
+I'll try different charts for this. Beeswarm didn't work. If I could make my Y axis bigger, I could include all the states and make the chart fuller. 
+
+I'll try a lollipop chart. 
+
+```{r}
+library(ggalt)
+```
+
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=state, x=Outside), 
+    horizontal = TRUE
+    )
+```
+I like this a lot better. 
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=reorder(state, Outside), x=Outside), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Texas and California continue to produce the most players on the outside", y="State")
+```
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=reorder(state, Setter), x=Setter), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Texas and California continue to produce the most players in the Setter position", y="State")
+```
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=reorder(state, Opposite), x=Opposite), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "California in the Opposite driver's seat", y="State")
+```
+In a way, it makes sense that California would produce more opposites. A lot of players out there play beach volleyball. 
