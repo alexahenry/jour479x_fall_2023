@@ -1,0 +1,24 @@
+```{r}
+library(tidyverse)
+library(cfbfastR)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/footballlogs23.csv")
+```
+
+```{r}
+head(logs)
+```
+
+```{r}
+Big10_team_quality <- logs |>
+  filter(Conference == "Big Ten Conference") |>
+  select(PassingYds, RushingYds, Team)
+```
+
+```{r}
+team_totals <- Big10_team_quality |>
+  group_by(Team)
+```
+

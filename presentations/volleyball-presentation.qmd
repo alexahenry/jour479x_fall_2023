@@ -1,0 +1,128 @@
+```{r}
+library(tidyverse)
+library(ggalt)
+library(scales)
+```
+
+```{r}
+vbroasters <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/finished_rosters.csv")
+
+vb_in_state <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/teams.csv")
+```
+
+```{r}
+head(vbroasters)
+head(vb_in_state)
+```
+
+I realized I had to merge the two lists in order to get the data that I wanted. 
+```{r}
+vbroasters23 <- vbroasters|> 
+  left_join(vb_in_state, join_by(team, ncaa_id))
+```
+
+
+```{r}
+head(vbroasters23)
+```
+
+I realized about here that not all the schools are included on this list so I worked with what I had.
+```{r}
+vbroasters23 |>
+  filter(!is.na(state)) |>
+  select(team, city, state, name)
+```
+
+
+```{r}
+vbroasters23 |>
+  group_by(state) |>
+  filter(!is.na(state)) |>
+  summarise(
+    states = n()) |>
+  arrange(desc(states)) |> top_n(10)
+```
+
+
+```{r}
+top10state <- vbroasters23 |>
+   group_by(state) |>
+  filter(!is.na(state)) |>
+  summarise(
+    states = n()) |>
+  arrange(desc(states)) |> 
+  top_n(10)
+```
+
+
+```{r}
+ggplot() + 
+  geom_bar(
+    data=top10state, 
+    aes(x=reorder(state, states),
+        weight=states)) + 
+  scale_y_continuous(labels = comma) +
+  labs(
+    title="Texas go-to state for NCAA volleyball coaches", 
+    x="School", 
+    y="Active NCAA Players") + 
+  theme_minimal() + 
+  coord_flip()
+```
+This is maybe less surprising than I had hoped. Texas and California have the most amount of players in the NCAA. I am surprised to see North Carolina, Illinois, Iowa and Pennsylvania in the top ten. Illinois and Iowa I never thought to be big volleyball states but I guess if there's nothing you can do outside why not hit a ball around? Pennsylvania is a mixed bag and I feel skewed in some ways because Penn State has multiple campuses with NCAA qualifying teams but that would be something I would like to see if roasters contain more in state or out of state players. However, Pennsylvania does have huge volleyball clubs and two Northeast Qualifier tournaments (Philadelphia and Pittsburgh). Which teams can compete in to qualify for nationals and a majority of those teams that compete are from New York and Pennsylvania. 
+
+Lollipop Chart - I went with a lollipop chart because the beeswarm had too little data to make a beeswarm. It looked more like bees instead of a swarm...  
+```{r}
+vbpositions <- vbroasters23 |>
+  group_by(state, position) |>
+  filter(!is.na(state)) |>
+  summarise(
+    states = n()
+  )
+```
+
+
+```{r}
+vbpositions <- vbpositions |>
+  pivot_wider(names_from = position, values_from = states)
+```
+
+
+```{r}
+vbpositions |>
+  group_by(state) |>
+  select(Outside, Middle, Setter, Opposite, `Libero/Defensive`) |>
+  arrange(desc(Outside)) |>
+  top_n(10)
+```
+After some fixing, I got to my answer. I arranged by outsides just because they are the most dominant position. Oddly enough, the top ten from the first chart still dominate when it comes to Middles and Outsides however California has the most setters and opposites/right side hitters. These numbers might be skewed a little bit (not by much) because each team lists their positions differently so for the purposes of time, I did the most common listing. Some players hold two positions as well. 
+
+```{r}
+top10positions <- vbpositions |>
+  group_by(state) |>
+  select(Outside, Middle, Setter, Opposite, `Libero/Defensive`) |>
+  arrange(desc(Outside)) |>
+  head(10)
+```
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=reorder(state, Outside), x=Outside), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Texas and California continue to produce the most players on the outside", y="State")
+```
+Again, not surprised. If Texas has the most amount of players it's likely they would have the most amount of players in the primary position besides setter.  
+
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=top10positions, 
+    aes(y=reorder(state, Opposite), x=Opposite), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "California in the Opposite driver's seat", y="State")
+```
+This is where California beat out a lot of states. It makes sense that California would produce more opposites. A lot of players out there play beach volleyball. Beach volleyball teaches you to play on multiple sides and take different angles that aren't comfortable which for a right hand hitter, right side isn't comfortable all the time. 

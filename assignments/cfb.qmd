@@ -2,6 +2,7 @@
 library(tidyverse)
 library(cfbfastR)
 library(Hmisc)
+library(ggbump)
 ```
 
 
@@ -73,5 +74,263 @@ close_games <- logs |> filter(Differential < 7)
 
 I'm lost on the last one. I'm not sure how to "define" close games. Because I would define a game that is decided by 7 points or less a close game. I'm just not sure how to do that. I did look at the code block from the basketball one we did and played around with different variables but I'm still not sure. Pls help.
 
+### Bubble Charts 
 
+```{r}
+library(tidyverse)
+```
+
+```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/footballlogs22.csv")
+```
+
+```{r}
+winlosslogs <- logs |> 
+  mutate(
+    wins = case_when(
+      grepl("W", Outcome) ~ 1, 
+      grepl("L", Outcome) ~ 0)
+)
+```
+
+```{r}
+winlosslogs |> 
+  group_by(Team, Conference) |> 
+  summarise(
+    TotalPlays = sum(OffensivePlays), 
+    TotalYards = sum(OffensiveYards), 
+    DefensivePlays = sum(DefPlays), 
+    DefensiveYards = sum(DefYards), 
+    TotalWins = sum(wins)) |> 
+  mutate(
+    OffensiveYPP = TotalYards/TotalPlays, 
+    DefensiveYPP = DefensiveYards/DefensivePlays) -> ypp
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, aes(x=OffensiveYPP, y=DefensiveYPP)
+    )
+```
+
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins)
+    )
+```
+
+make it transparent
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins),
+    alpha = .3) + 
+  scale_size(range = c(3, 8), name="Wins")
+```
+
+big ten 
+
+```{r}
+bigten <- ypp |> filter(Conference == "Big Ten Conference")
+
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red")
+```
+
+```{r}
+ypp |> 
+  ungroup() |> 
+  summarise(
+    offense = mean(OffensiveYPP), 
+    defense = mean(DefensiveYPP)
+    )
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143)
+```
+
+load packages and library
+
+```{r}
+library(ggrepel)
+```
+
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143) +
+  geom_text_repel(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, label=Team)
+  )
+```
+
+chart but with labels 
+```{r}
+ggplot() + 
+  geom_point(
+    data=ypp, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="grey", 
+    alpha=.5) + 
+  geom_point(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, size=TotalWins), 
+    color="red") + 
+  geom_vline(xintercept = 5.700174) + 
+  geom_hline(yintercept = 5.55143) + 
+  geom_text_repel(
+    data=bigten, 
+    aes(x=OffensiveYPP, y=DefensiveYPP, label=Team)
+  ) +
+  labs(title="Is Maryland moving up to the Big Ten's best?", subtitle="The Terps offense and defense puts it among ranked teams in the conference.", caption="Source: NCAA | By Derek Willis")  + theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+```
+
+### Bump Charts 
+
+```{r}
+rankings <- read_csv("https://thescoop.org/sports-data-files/cfbranking22.csv")
+```
+
+```{r}
+head(rankings)
+```
+
+```{r}
+ggplot() + 
+  geom_bump(
+    data=rankings, aes(x=Week, y=Rank, color=Team))
+```
+Bump chart needs at least two times for rank to be on the chart 
+
+```{r}
+top10 <- rankings |> filter(Week == 15 & Rank <= 10)
+
+newrankings <- rankings |> filter(Team %in% top10$Team)
+```
+
+
+```{r}
+ggplot() + 
+  geom_bump(
+    data=newrankings, aes(x=Week, y=Rank, color=Team))
+```
+Reverse 
+
+```{r}
+ggplot() + 
+  geom_bump(
+    data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  scale_y_reverse()
+```
+
+```{r}
+ggplot() + 
+  geom_bump(data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  geom_point(data=newrankings, aes(x=Week, y=Rank, color=Team), size = 4) +
+  scale_y_reverse() 
+```
+with hex colors https://teamcolorcodes.com/ncaa-color-codes/
+
+```{r}
+ggplot() + 
+  geom_bump(data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  geom_point(data=newrankings, aes(x=Week, y=Rank, color=Team), size = 4) + 
+  scale_color_manual(values = c("#9E1B32","#F56600", "#BA0C2F", "#0021A5", "#ffcb05", "#BB0000", "#4d1979","#FF8200", "#990000", "#CC0000")) +
+  scale_y_reverse() 
+```
+
+adding tex into the chart 
+
+```{r}
+ggplot() + 
+  geom_bump(data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  geom_point(data=newrankings, aes(x=Week, y=Rank, color=Team), size = 4) +   
+  geom_text(data = newrankings |> filter(Week == min(Week)), aes(x = Week - .2, y=Rank, label = Team), size = 3, hjust = 1) +
+  geom_text(data = newrankings |> filter(Week == max(Week)), aes(x = Week + .2, y=Rank, label = Team), size = 3, hjust = 0) +
+  scale_color_manual(values = c("#9E1B32","#F56600", "#BA0C2F", "#0021A5", "#ffcb05", "#BB0000", "#4d1979","#FF8200", "#990000", "#CC0000")) +
+  scale_y_reverse() 
+```
+text hierarchy
+
+```{r}
+ggplot() + 
+  geom_bump(data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  geom_point(data=newrankings, aes(x=Week, y=Rank, color=Team), size = 4) +   
+  geom_text(data = newrankings |> filter(Week == min(Week)), aes(x = Week - .2, y=Rank, label = Team), size = 3, hjust = 1) +
+  geom_text(data = newrankings |> filter(Week == max(Week)), aes(x = Week + .2, y=Rank, label = Team), size = 3, hjust = 0) +
+  labs(title="Last year's top ten was anything but boring", subtitle="", y= "Rank", x = "Week") +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) +
+  scale_color_manual(values = c("#9E1B32","#F56600", "#BA0C2F", "#0021A5", "#ffcb05", "#BB0000", "#4d1979","#FF8200", "#990000", "#CC0000")) +
+  scale_y_reverse() 
+```
+
+```{r}
+ggplot() + 
+  geom_bump(data=newrankings, aes(x=Week, y=Rank, color=Team)) + 
+  geom_point(data=newrankings, aes(x=Week, y=Rank, color=Team), size = 4) +   
+  geom_text(data = newrankings |> filter(Week == min(Week)), aes(x = Week - .2, y=Rank, label = Team), size = 3, hjust = 1) +
+  geom_text(data = newrankings |> filter(Week == max(Week)), aes(x = Week + .2, y=Rank, label = Team), size = 3, hjust = 0) +
+  labs(title="Last year's top ten was anything but boring", subtitle="", y= "Rank", x = "Week") +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    ) +
+  scale_color_manual(values = c("#9E1B32","#F56600", "#BA0C2F", "#0021A5", "#ffcb05", "#BB0000", "#4d1979","#FF8200", "#990000", "#CC0000")) +
+  scale_x_continuous(breaks=c(13,14,15,16,17)) + 
+  scale_y_reverse(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
+```
 

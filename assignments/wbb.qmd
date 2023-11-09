@@ -1,0 +1,159 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 20, prob = .317)
+
+table(simulations)
+```
+n = 1000 simulations. How we read it:  how often it happens and how likely it is to occur. 
+
+Men's basketball 
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 15, prob = .326)
+
+hist(simulations)
+```
+```{r}
+table(simulations)
+```
+
+Lacrosse
+```{r}
+library(dplyr)
+
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 1, prob = .377)
+
+four_in_a_row <- mean(simulations == 1 & lead(simulations, 1) == 1 & lead(simulations, 2) == 1 & lead(simulations, 3) == 1)
+
+odds <- 1/four_in_a_row
+```
+Breanna Stewart
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 17, prob = .465)
+
+hist(simulations)
+```
+```{r}
+table(simulations)
+```
+
+### Beeswarm plots
+
+```{r}
+library(tidyverse)
+library(ggbeeswarm)
+library(ggrepel)
+```
+
+
+```{r}
+set.seed(1234)
+```
+
+
+```{r}
+players <- read_csv("https://thescoop.org/sports-data-files/wbb_players_2023.csv")
+```
+
+```{r}
+head(players)
+```
+
+```{r}
+activeplayers <- players |> filter(mp>0, position != "NULL") 
+```
+
+
+```{r}
+activeplayers <- activeplayers |> mutate(tspct=pts/(2*(fga+0.44*fta)))
+```
+
+calculate qt
+```{r}
+summary(activeplayers$fga)
+```
+182 came from 3rd QT
+```{r}
+shooters <- activeplayers |> filter(fga > 187)
+```
+
+
+```{r}
+ggplot() + geom_beeswarm(data=shooters, aes(x=position, y=tspct), color="grey")
+```
+```{r}
+umd <- activeplayers |> 
+  filter(team == "Maryland") |> 
+  filter(fga>187) |> 
+  arrange(desc(tspct))
+```
+
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red")
+```
+
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
+Other options
+
+geom_quasirandom
+```{r}
+ggplot() + 
+  geom_quasirandom(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_quasirandom(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
+geom_jitter
+```{r}
+ggplot() + 
+  geom_jitter(
+    data=shooters, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_jitter(
+    data=umd, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+
