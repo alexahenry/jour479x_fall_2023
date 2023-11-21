@@ -1,0 +1,62 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+logs <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/rosters_2023_24.csv")
+```
+
+```{r}
+head(logs)
+```
+
+```{r}
+logs |>
+  filter(!is.na(state_clean)) |>
+  select(team, hometown_clean, state_clean, name)
+```
+
+```{r}
+logs |>
+  group_by(state_clean) |>
+  filter(!is.na(state_clean)) |>
+  summarise(
+    states = n()) |>
+  arrange(desc(states))
+```
+With the new roaster data, the top ten from my first presentation has changed slightly. Wisconsin is actually now in the top 10 where I think previously they were maybe top 20. Same thing with Minn. and North Carolina. I think looking at this across all of NCAA helped in some way. Interestingly, California and Texas still lead the way by numbers. If I could find a way to break it down by division, that would be interesting. I wouldn't be surpised by the numbers if California and Texas are leading in D1. 
+### Positions
+
+```{r}
+vbpositions <- logs |>
+  select(position, state_clean)
+```
+
+```{r}
+vbpositions_clean <- vbpositions |>
+  mutate(
+    position = case_when (
+      str_detect(position, "Middle Blocker") ~ "MB", "Middle", "Middle Hitter", "M", "MH", 
+      str_detect(position, "Outside") ~ "Outside Hitter", "OH", 
+      str_detect(position, "Libero") ~ "L", "LIB", "LB", 
+      str_detect(position, "Defensive Specialist") ~ "DS", "Defensive", 
+      str_detect(position, "Setter") ~ "S", 
+      str_detect(position, "Opposite") ~ "Opposite Hitter", "OPP", "Right-Side", "RS", "Right", "Rightside",
+      .default = NA)
+  )
+```
+Currently working on cleaning up the position data to get a more accurate representation of which state has the most position wise. I think with the top states changing slightly this might be more interesting to look at. In this section, I also want to add their schools as well. Although, there are transfers so I'll have to look into if I want to factor that in. 
+
+### Per Capita 
+
+```{r}
+states <- read_csv("http://goodcsv.com/wp-content/uploads/2020/08/us-states-territories.csv")
+```
+
+```{r}
+usstates <- states |>
+  filter(!is.na(`Population (2019)`)) |>
+  select(state) |>
+  top_n(50)
+```
+I'm playing around with this CSV file with the states. I'm working on making sure it's just US states and not territories. The population data is from 2019, so if I can find a more updated one, I will. 
