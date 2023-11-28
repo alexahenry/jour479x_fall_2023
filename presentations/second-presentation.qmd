@@ -35,7 +35,7 @@ vbpositions <- logs |>
 ```{r}
 vbpositions_clean <- vbpositions |>
   mutate(
-    position = case_when (
+    clean_position = case_when (
       str_detect(position, "Middle Blocker") ~ "MB", "Middle", "Middle Hitter", "M", "MH", 
       str_detect(position, "Outside") ~ "Outside Hitter", "OH", 
       str_detect(position, "Libero") ~ "L", "LIB", "LB", 
@@ -45,6 +45,30 @@ vbpositions_clean <- vbpositions |>
       .default = NA)
   )
 ```
+
+```{r}
+vbpositions_clean <- vbpositions |>
+  mutate(
+    clean_position = case_when (
+      str_detect(position,"Middle") ~ "Middle Blocker",
+      str_detect(position, "MB") ~ "Middle Blocker",
+      str_detect(position, "OH") ~ "Outside Hitter",
+      str_detect(position, "Outside") ~ "Outside Hitter", 
+      str_detect(position, "LB") ~ "Libero", 
+      str_detect(position, "L") ~ "Libero", 
+      str_detect(position, "DS") ~ "Defensive Specialist", 
+      str_detect(position, "Defensive") ~ "Defensive Specialist", 
+      str_detect(position, "S") ~ "Setter", 
+      str_detect(position, "Opposite") ~ "Opposite Hitter", 
+      str_detect(position, "OPP") ~ "Opposite Hitter", 
+      str_detect(position, "Right-Side") ~ "Opposite Hitter", 
+      str_detect(position, "RS") ~ "Opposite Hitter", 
+      str_detect(position, "Right") ~ "Opposite Hitter", 
+      str_detect(position, "Rightside") ~ "Opposite Hitter", 
+      .default = NA)
+  )
+```
+
 Currently working on cleaning up the position data to get a more accurate representation of which state has the most position wise. I think with the top states changing slightly this might be more interesting to look at. In this section, I also want to add their schools as well. Although, there are transfers so I'll have to look into if I want to factor that in. 
 
 ### Per Capita 
