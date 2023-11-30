@@ -201,4 +201,4 @@ ggplot() +
     panel.grid.minor = element_blank()
     )
 ```
-
+note: to point out a specific dot, create a data frame with that person

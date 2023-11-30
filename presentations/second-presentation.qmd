@@ -32,19 +32,6 @@ vbpositions <- logs |>
   select(position, state_clean)
 ```
 
-```{r}
-vbpositions_clean <- vbpositions |>
-  mutate(
-    clean_position = case_when (
-      str_detect(position, "Middle Blocker") ~ "MB", "Middle", "Middle Hitter", "M", "MH", 
-      str_detect(position, "Outside") ~ "Outside Hitter", "OH", 
-      str_detect(position, "Libero") ~ "L", "LIB", "LB", 
-      str_detect(position, "Defensive Specialist") ~ "DS", "Defensive", 
-      str_detect(position, "Setter") ~ "S", 
-      str_detect(position, "Opposite") ~ "Opposite Hitter", "OPP", "Right-Side", "RS", "Right", "Rightside",
-      .default = NA)
-  )
-```
 
 ```{r}
 vbpositions_clean <- vbpositions |>
@@ -65,11 +52,118 @@ vbpositions_clean <- vbpositions |>
       str_detect(position, "RS") ~ "Opposite Hitter", 
       str_detect(position, "Right") ~ "Opposite Hitter", 
       str_detect(position, "Rightside") ~ "Opposite Hitter", 
-      .default = NA)
-  )
+      .default = NA) 
+  ) |> na.omit()
+```
+Here, I cleaned up the data. Before I did the NA omit, there were some positions where their state said NA, so I would have to assume without looking at names that those are the international players and/or a state wasn't listed. 
+
+```{r}
+vbpositions_clean |>
+  group_by(state_clean, clean_position) |>
+  summarise(
+    positions = n()) |>
+    arrange(desc(positions))
 ```
 
-Currently working on cleaning up the position data to get a more accurate representation of which state has the most position wise. I think with the top states changing slightly this might be more interesting to look at. In this section, I also want to add their schools as well. Although, there are transfers so I'll have to look into if I want to factor that in. 
+###Team and State
+
+```{r}
+teams <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/teams.csv")
+```
+```{r}
+logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
+```
+```{r}
+logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
+```
+
+For Texas
+```{r}
+logs_with_teams |>
+  filter(team_state == 'TX', state_clean == 'TX', division == 'I') |> 
+  group_by(team) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count))
+```
+For CA
+```{r}
+logs_with_teams |>
+  filter(team_state == 'CA', state_clean == 'CA', division == 'I') |> 
+  group_by(team) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count))
+```
+For all schools
+```{r}
+logs_with_teams |>
+  filter(division == "III") |> 
+  group_by(team, team_state, state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+```
+So changing the division, it looks like smaller schools recruit in state where Divison I schools tend to go out of state to look for their talent. 
+
+```{r}
+logs_with_teams |>
+  filter(division == "I") |> 
+  filter(conference == "Big Ten") |>
+  group_by(team, team_state, state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+```
+
+```{r}
+logs_with_teams |>
+  filter(division == "I") |> 
+  filter(conference == "SEC") |>
+  group_by(team, team_state, state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+```
+### Looking at Top Schools in NCAA Tournment 
+
+```{r}
+logs_with_teams |>
+  filter(division == "I") |> 
+  group_by(team) |> 
+  summarize(count = n_distinct(state_clean)) |> 
+    arrange(desc(count)) |> na.omit()
+```
+A look at unique states each school has. (keep working with this, break down between Big conference and HBCU)
+Louisville
+```{r}
+logs_with_teams |>
+  filter(division == "I") |> 
+  filter(conference == "ACC") |>
+  filter(team == "Louisville") |>
+  group_by(team_state, state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+```
+Pittsburgh
+```{r}
+logs_with_teams |>
+  filter(division == "I") |> 
+  filter(conference == "ACC") |>
+  filter(team == "Pittsburgh") |>
+  group_by(team_state, state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+```
+
+Chart (come back to this)
+```{r}
+all_states <- logs_with_teams |>
+  group_by(state_clean) |> 
+  summarize(count = n()) |> 
+    arrange(desc(count))
+
+ggplot() +
+  geom_histogram(data=all_states, aes(y=count)) +
+  facet_wrap(~state_clean)
+  
+```
+
 
 ### Per Capita 
 
