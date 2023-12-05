@@ -148,13 +148,8 @@ ggplot() +
 ### Per Capita 
 
 ```{r}
-states <- read_csv("http://goodcsv.com/wp-content/uploads/2020/08/us-states-territories.csv")
+states <- read_csv("https://www2.census.gov/programs-surveys/popest/tables/2020-2022/state/totals/NST-EST2022-POP.xlsx")
 ```
+I just need to make this a csv. But my data got a little messy because I'm missing the division part of my work so I can sort it the way I want to which I think would help me with the per capita part. I think making this part maybe a beeswarm chart could be good. Other than facet wraps and bar charts for the positions is what I'm thinking would be best. 
 
-```{r}
-usstates <- states |>
-  filter(!is.na(`Population (2019)`)) |>
-  select(state) |>
-  top_n(50)
-```
-I'm playing around with this CSV file with the states. I'm working on making sure it's just US states and not territories. The population data is from 2019, so if I can find a more updated one, I will. 
+So I think I may just need the division part back in the data and I can keep trucking along. 
