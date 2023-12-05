@@ -169,3 +169,48 @@ teamzscore |>
   select(Team, TotalZscore)
 ```
 
+### Early Season Analysis 
+
+```{r}
+games <- read_csv("https://raw.githubusercontent.com/dwillis/dwillis.github.io/main/docs/sports-data-files/cbblogs1524.csv")
+```
+
+```{r}
+maryland_mbb <- games |>
+  filter(Game < 5) |>
+  filter (TeamFull == "Maryland Terrapins")
+```
+
+```{r}
+maryland_mbb |> summarise(mean(Team3PPCT))
+```
+```{r}
+maryland_mbb |> summarise(mean(Opponent3PPCT))
+```
+
+```{r}
+ggplot() + 
+  geom_hline(yintercept=0.3184286, color="red") + 
+  geom_hline(yintercept=0.287	, color="blue") + 
+  geom_line(data=maryland_mbb, aes(x=Date, y=Team3PPCT, group=Team)) + 
+  geom_line(data=maryland_mbb, aes(x=Date, y=Opponent3PPCT, group=Team), color="green") + 
+  scale_y_continuous(limits = c(0, 1)) +
+  facet_wrap(~Game)
+```
+So, here it looks like through the first 4 games of a season, Maryland seems to have a few ups and downs. when it comes to their 3 point percentage compared to their opponents. In the seasons of 2021 and 2023, they actually held a higher 3 point percentage but almost flat lined when it came to games 3 and 4. 
+
+### Rvest
+```{r}
+library(rvest)
+```
+
+```{r}
+url <- "http://www.cfbstats.com/2023/leader/national/team/offense/split01/category09/sort01.html"
+
+scoringoffense <- url |>
+  read_html() |>
+  html_table()
+
+scoring_df <- scoringoffense[[1]]
+```
+

@@ -1,0 +1,151 @@
+```{r, output=FALSE}
+library(tidyverse)
+```
+
+```{r, output=FALSE}
+games <- read_csv("https://raw.githubusercontent.com/dwillis/wv_football/main/scores.csv")
+wv_games <- games |> filter(home_team_state == 'WV', visiting_team_state == 'WV')
+
+wv_games |> filter(date == '2010-11-06')
+```
+
+## Calculate the average differential by year for WV games
+
+```{r}
+avg_diff <- wv_games |> 
+  group_by(year) |>
+  summarize (avg_diff = mean(differential))
+
+```
+
+
+## Make a bar chart of average differential
+
+```{r}
+avg_diff |>
+  ggplot() + 
+  geom_bar(aes(x=year, weight = avg_diff))
+```
+
+## Are there more 35+ margin games?
+
+```{r}
+all_games <- wv_games |> 
+  group_by(year) |> 
+  summarise(all_games = n())
+
+thirtyfive_plus <- wv_games |> 
+  filter(differential >= 35) |> 
+  group_by(year) |> 
+  summarise(thirtyfive_plus_games = n())
+
+thirtyfive_with_pct <- all_games |> 
+  inner_join(thirtyfive_plus) |> 
+  mutate(pct = thirtyfive_plus_games/all_games *100) |> 
+  arrange(desc(pct))
+
+all_games |> 
+  inner_join(thirtyfive_plus) |> 
+  mutate(pct = thirtyfive_plus_games/all_games *100) |> 
+  arrange(desc(pct))
+```
+
+
+```{r}
+ggplot() + 
+  geom_bar(data=thirtyfive_with_pct, aes(x=year, weight=pct)) +
+  labs(
+    title="West Virginia High School Football's Lopsided Games", 
+    subtitle = "More than 45 percent of games this season have a margin of 35 or more points, a modern high.",
+    x="Year", 
+    y="Percent"
+) + theme_minimal()
+```
+
+## Teams with largest average margins in 2023
+
+```{r}
+home_margins <- wv_games |> 
+  mutate(home_team_margin = home_team_score - visiting_team_score) |> 
+  group_by(year, home_team) |> 
+  summarize(home_games = n(), home_margin = sum(home_team_margin))
+  
+
+visiting_margins <- wv_games |> 
+  mutate(visiting_team_margin = visiting_team_score - home_team_score) |> 
+  group_by(year, visiting_team) |> 
+  summarize(visiting_games = n(), visiting_margin = sum(visiting_team_margin))
+
+team_margins <- home_margins |> left_join(visiting_margins, join_by(home_team == visiting_team, year == year)) |> 
+  mutate(home_games = replace_na(home_games, 0)) |> 
+  mutate(visiting_games = replace_na(visiting_games, 0)) |> 
+  mutate(home_margin = replace_na(home_margin, 0)) |> 
+  mutate(visiting_margin = replace_na(visiting_margin, 0)) |> 
+  mutate(total_games = home_games + visiting_games, total_margin = home_margin + visiting_margin) |>
+  rename(team = home_team) |> 
+  group_by(team, year) |> 
+  summarize(avg_margin = total_margin/total_games) |> 
+  arrange(desc(avg_margin))
+
+```
+
+## There are more teams with average margins of 35 points or more this season than any recent year
+
+```{r}
+
+```
+
+## Teams with the largest average margin of victory in 2023
+
+```{r}
+
+```
+
+## Runaway Games - 49+ point margins
+
+```{r}
+
+```
+
+## Runaway Games - 70+ point margins
+
+```{r}
+
+```
+
+
+## Top and Bottom
+
+```{r}
+library(cowplot)
+
+top10 <- team_margins |> ungroup() |>  top_n(10, wt=avg_margin) |> mutate(display = paste(team, year))
+bottom10 <- team_margins |> ungroup() |> top_n(10, wt=-avg_margin)|> mutate(display = paste(team, year))
+
+bar1 <- ggplot() + 
+  geom_bar(data=top10, aes(x=reorder(display, avg_margin), weight=avg_margin)) +
+  coord_flip() + 
+  labs(title="WV's Most Dominant and Dominated Teams", subtitle = "This season has seen some historically lopsided results.",  x="", y="Average margin in points", caption = "") + 
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+
+bar2 <- ggplot() + 
+  geom_bar(data=bottom10, aes(x=reorder(display, avg_margin), weight=avg_margin)) +
+  coord_flip() +  
+  labs(title = "", subtitle= "", x="", y="",  caption="Source: WV Tailgate Central | By Derek Willis") + 
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+
+plot_grid(bar1, bar2) 
+```
+

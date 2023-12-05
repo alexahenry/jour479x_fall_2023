@@ -53,6 +53,7 @@ table(simulations)
 library(tidyverse)
 library(ggbeeswarm)
 library(ggrepel)
+library(ggalt)
 ```
 
 
@@ -156,4 +157,48 @@ ggplot() +
     data=umd, 
     aes(x=position, y=tspct, label=player))
 ```
+### Encircling points on a scatterplot
 
+```{r}
+players <- read_csv("https://raw.githubusercontent.com/dwillis/hhs-snapshots/main/data/player_totals_20231130.csv") |> filter(mp > 0)
+```
+Players who have played so far
+
+```{r}
+ggplot() + geom_point(data=players, aes(x=mp, y=pts))
+```
+```{r}
+topscorers <- players |> filter(pts > 175)
+```
+
+
+```{r}
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") +
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black")
+```
+a good way to make people pay attention to the players that are seperated from the pack. 
+
+```{r}
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+   geom_text(data=topscorers, aes(x=mp, y=pts, label=full_name), hjust = 0, vjust=1) +
+  geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=0, expand=0, colour="red")
+```
+```{r}
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+  geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=.5, expand=.03, colour="red") +
+  geom_text(aes(x=275, y=275, label="Top scorers")) + 
+  labs(title="Caitlin Clark Alone At Top", subtitle="The Iowa star is by far the top scorer among all NCAA players", x="Minutes", y="Points") + 
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+```
+note: to point out a specific dot, create a data frame with that person

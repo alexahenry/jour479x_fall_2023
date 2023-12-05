@@ -1,0 +1,20 @@
+```{r}
+library(tidyverse) 
+library(hoopR)
+```
+
+```{r}
+lineups <- nba_teamdashlineups(team_id = 1610612763)[[2]]
+```
+
+```{r}
+  lineups <- lineups |> 
+  mutate(across(starts_with("GP"):ncol(lineups), as.numeric))
+```
+
+```{r}
+lineups |>
+  select(GROUP_NAME, GP, MIN, PLUS_MINUS) |>
+  arrange(desc(MIN))
+```
+My main takeaway is mainly that the Grizzles are pretty mid but their best line up is when Tillman and Zaire Williams are not in the lineup they are +13 than when they are both in the lineup. 
