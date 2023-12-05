@@ -126,7 +126,7 @@ logs_with_teams |>
     arrange(desc(count)) |> na.omit()
 ```
 
-Chart (come back to this)
+### Chart (come back to this)
 ```{r}
 all_states <- logs_with_teams |>
   group_by(state_clean) |> 
@@ -143,7 +143,7 @@ ggplot() +
 ### Per Capita 
 
 ```{r}
-states <- read_csv("https://www2.census.gov/programs-surveys/popest/tables/2020-2022/state/totals/NST-EST2022-POP.xlsx")
+states <- read_csv("")
 ```
 I just need to make this a csv. But my data got a little messy because I'm missing the division part of my work so I can sort it the way I want to which I think would help me with the per capita part. I think making this part maybe a beeswarm chart could be good. Other than facet wraps and bar charts for the positions is what I'm thinking would be best. 
 

@@ -202,3 +202,54 @@ ggplot() +
     )
 ```
 note: to point out a specific dot, create a data frame with that person
+
+### Parity 
+
+```{r}
+logs <- read_csv("https://thescoop.org/sports-data-files/wbblogs24.csv")
+rankings <- read_csv("https://thescoop.org/sports-data-files/wbb_rankings.csv")
+logs23 <- read_csv("https://thescoop.org/sports-data-files/wbblogs23.csv")
+```
+# Parity Index = (SRS +100) / (SOS + 100)
+
+```{r}
+parity_index24 <- logs |> 
+  group_by(Team, Conference) |> 
+  summarise(srs_score = mean(TeamSRS), sos_score = mean(TeamSOS)) |> 
+  mutate(parity_index = (srs_score + 100) / (sos_score + 100))
+
+parity_index23 <- logs23 |> 
+  group_by(Team, Conference) |> 
+  summarise(srs_score = mean(TeamSRS), sos_score = mean(TeamSOS)) |> 
+  mutate(parity_index = (srs_score + 100) / (sos_score + 100))
+```
+
+```{r}
+parity_index24 |> 
+  filter(Conference == 'Big Ten WBB') |> 
+  ggplot() + 
+  geom_point(aes(x=srs_score, y = sos_score, label = Team)) +
+  geom_text(aes(x=srs_score, y = sos_score, label = Team))
+```
+```{r}
+parity_with_top25 <- parity_index24 |> left_join(rankings, join_by(Team == team))
+```
+
+```{r}
+combined_data <- bind_rows(parity_index24 |> mutate(season="2024"), parity_index23 |> mutate(season = "2023")) 
+
+result <- combined_data %>%
+  group_by(Team) %>%
+  summarize(
+    Parity_Index_2024 = mean(parity_index[season == "2024"]),
+    Parity_Index_2023 = mean(parity_index[season == "2023"])
+  ) %>%
+  filter(!is.na(Parity_Index_2024)) |> 
+  filter(!is.na(Parity_Index_2023)) |>
+  ungroup() %>%
+  summarise(
+    p_value = t.test(Parity_Index_2024, Parity_Index_2023, paired = TRUE)$p.value,
+    mean_difference = mean(Parity_Index_2024 - Parity_Index_2023)
+  )
+```
+
