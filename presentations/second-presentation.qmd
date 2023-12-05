@@ -52,11 +52,6 @@ teams <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-v
 logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
 ```
 
-P.s: If i could see the schools by division again that would be cool. 
-```{r}
-logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
-```
-
 For Texas
 ```{r}
 logs_with_teams |>
