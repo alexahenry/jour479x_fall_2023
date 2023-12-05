@@ -3,7 +3,7 @@ library(tidyverse)
 ```
 
 ```{r}
-logs <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/rosters_2023_24.csv")
+logs <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/rosters_2023_cleaned.csv")
 ```
 
 ```{r}
@@ -13,7 +13,7 @@ head(logs)
 ```{r}
 logs |>
   filter(!is.na(state_clean)) |>
-  select(team, hometown_clean, state_clean, name)
+  select(team, primary_position, state_clean, name)
 ```
 
 ```{r}
@@ -24,55 +24,35 @@ logs |>
     states = n()) |>
   arrange(desc(states))
 ```
-With the new roaster data, the top ten from my first presentation has changed slightly. Wisconsin is actually now in the top 10 where I think previously they were maybe top 20. Same thing with Minn. and North Carolina. I think looking at this across all of NCAA helped in some way. Interestingly, California and Texas still lead the way by numbers. If I could find a way to break it down by division, that would be interesting. I wouldn't be surpised by the numbers if California and Texas are leading in D1. 
+With the new roaster data, the top ten from my first presentation has changed slightly. Wisconsin is actually now in the top 10 where I think previously they were maybe top 20. Same thing with Minn. and North Carolina. I think looking at this across all of NCAA helped in some way. Interestingly, California and Texas still lead the way by numbers. If I could find a way to break it down by division, that would be interesting. I wouldn't be surprised by the numbers if California and Texas are leading in D1. 
 ### Positions
 
 ```{r}
 vbpositions <- logs |>
-  select(position, state_clean)
+  select(primary_position, state_clean) |> 
+  na.omit()
 ```
 
-
 ```{r}
-vbpositions_clean <- vbpositions |>
-  mutate(
-    clean_position = case_when (
-      str_detect(position,"Middle") ~ "Middle Blocker",
-      str_detect(position, "MB") ~ "Middle Blocker",
-      str_detect(position, "OH") ~ "Outside Hitter",
-      str_detect(position, "Outside") ~ "Outside Hitter", 
-      str_detect(position, "LB") ~ "Libero", 
-      str_detect(position, "L") ~ "Libero", 
-      str_detect(position, "DS") ~ "Defensive Specialist", 
-      str_detect(position, "Defensive") ~ "Defensive Specialist", 
-      str_detect(position, "S") ~ "Setter", 
-      str_detect(position, "Opposite") ~ "Opposite Hitter", 
-      str_detect(position, "OPP") ~ "Opposite Hitter", 
-      str_detect(position, "Right-Side") ~ "Opposite Hitter", 
-      str_detect(position, "RS") ~ "Opposite Hitter", 
-      str_detect(position, "Right") ~ "Opposite Hitter", 
-      str_detect(position, "Rightside") ~ "Opposite Hitter", 
-      .default = NA) 
-  ) |> na.omit()
-```
-Here, I cleaned up the data. Before I did the NA omit, there were some positions where their state said NA, so I would have to assume without looking at names that those are the international players and/or a state wasn't listed. 
-
-```{r}
-vbpositions_clean |>
-  group_by(state_clean, clean_position) |>
+vbpositions |>
+  group_by(primary_position, state_clean) |>
   summarise(
-    positions = n()) |>
-    arrange(desc(positions))
+    positions = n()) |> 
+      arrange(desc(positions))
 ```
-
+So, some of these numbers aren't shocking. Outsides are the primary position and come at an abundance no matter the state. But I did find it interesting that California produced the most aobut of Middle Blockers and Setters and Texas produces the most amount DS and Right Side. I have to wonder if that's due to the fact that they are able to play year round so players are able to develop in all areas of the game sooner. 
 ###Team and State
 
 ```{r}
 teams <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/teams.csv")
 ```
+
+
 ```{r}
 logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
 ```
+
+P.s: If i could see the schools by division again that would be cool. 
 ```{r}
 logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
 ```
@@ -80,7 +60,7 @@ logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id"))
 For Texas
 ```{r}
 logs_with_teams |>
-  filter(team_state == 'TX', state_clean == 'TX', division == 'I') |> 
+  filter(state_clean == 'TX') |> 
   group_by(team) |> 
   summarize(count = n()) |> 
     arrange(desc(count))
