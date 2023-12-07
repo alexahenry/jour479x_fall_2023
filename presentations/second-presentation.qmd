@@ -63,7 +63,7 @@ logs_with_teams |>
 For CA
 ```{r}
 logs_with_teams |>
-  filter(team_state == 'CA', state_clean == 'CA', division == 'I') |> 
+  filter(team_state == 'FL', state_clean == 'FL', division == 'I') |> 
   group_by(team) |> 
   summarize(count = n()) |> 
     arrange(desc(count))
@@ -100,29 +100,38 @@ logs_with_teams <- logs_with_teams |>
     team_state != state_clean ~ "OUT",
     .default = NA
   ))
-  
+
  logs_with_teams |>
+   filter(conference == "SEC") |>
    group_by(team, conference, in_out_state) |>
    summarise(
      count = n()) |> 
     arrange(desc(count)) |> na.omit()
 ```
-
-```{r}
-logs_with_teams |> 
-  filter(team == 'Virginia') |> arrange(name)
-```
-
-
-
-### Maybe a scatter plot???
 ```{r}
 logs_with_teams |>
-  filter(division == "I") |> 
-  filter(conference == "Big Ten") |>
-  ggplot() + 
-  geom_point(aes(x=count, y = sos_score, label = Team)) +
-  geom_text(aes(x=srs_score, y = sos_score, label = Team))
+  filter(division == "I") |>
+  group_by(conference, in_out_state) |>
+  summarise(
+    count = n()
+  ) |> arrange(desc(count)) |> na.omit()
+```
+So here, I found something here, the ACC actually has more out of state players in their conference than any conference in DI. FSU and Pitt share the ACC championship. Pittsburgh does not have anyone in state on their team. (FSU isn't in the data but their under previous school's column. 
+
+### Bar Chart
+```{r}
+logs_with_conferences <- logs_with_teams |>
+  select(conference, in_out_state) |> 
+  summarise(
+    count = n()
+  ) |>
+na.omit()|> pivot_wider(values_from = in_out_state)
+
+ggplot() + 
+  geom_point(data=logs_with_conferences, aes(x=conference, y=in_out_state)) +
+  scale_y_continuous(limits = c(0, .7)) + 
+  scale_x_continuous(limits = c(0, .7)) + 
+  facet_wrap(~conference)
 ```
 
 ```{r}
