@@ -1,5 +1,6 @@
 ```{r}
 library(tidyverse)
+library(scales)
 ```
 
 ```{r}
@@ -49,7 +50,9 @@ teams <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-v
 
 
 ```{r}
-logs_with_teams <- logs |> inner_join(teams, join_by("team", "ncaa_id")) 
+logs_with_teams <- logs |> inner_join(teams, join_by("ncaa_id")) |>
+  rename(team = team.x) |>
+  select(-team.y)
 ```
 
 For Texas
@@ -108,6 +111,8 @@ logs_with_teams <- logs_with_teams |>
      count = n()) |> 
     arrange(desc(count)) |> na.omit()
 ```
+
+
 ```{r}
 logs_with_teams |>
   filter(division == "I") |>
@@ -118,30 +123,92 @@ logs_with_teams |>
 ```
 So here, I found something here, the ACC actually has more out of state players in their conference than any conference in DI. FSU and Pitt share the ACC championship. Pittsburgh does not have anyone in state on their team. (FSU isn't in the data but their under previous school's column. 
 
-### Bar Chart
+### Bar Chart of domestic players
 ```{r}
+Power_five <- c("Big Ten", "SEC", "ACC", "Pac-12", "Big 12")
+
 logs_with_conferences <- logs_with_teams |>
-  select(conference, in_out_state) |> 
+  filter(!is.na(in_out_state)) |>
+  filter(division == "I") |>
+  group_by(conference, in_out_state, division) |> 
   summarise(
     count = n()
   ) |>
-na.omit()|> pivot_wider(values_from = in_out_state)
+ pivot_wider(names_from = in_out_state, values_from = count) |>
+  mutate(total = IN + OUT, pct_in = IN/total *100)
+
+power_five <- logs_with_conferences |> filter(conference %in% Power_five)
 
 ggplot() + 
-  geom_point(data=logs_with_conferences, aes(x=conference, y=in_out_state)) +
-  scale_y_continuous(limits = c(0, .7)) + 
-  scale_x_continuous(limits = c(0, .7)) + 
-  facet_wrap(~conference)
+  geom_bar(
+    data=power_five, 
+    aes(
+      x=reorder(conference, -pct_in), 
+      weight= pct_in
+      )
+    ) + 
+  scale_y_continuous(labels=comma) + 
+  labs(
+    title="The Big 12 and Pac-12 stays in their backyard among Power 5 schools", 
+    x="Conference", 
+    y="Percentage of In-State Players in conference"
+)
 ```
+I think the bar chart works well here. But come to find out, the Big 12 and Pac-12 tend to stay within in their own backyards. I think this is interesting because the last few championships in recent years have been a mixed bag. Last year, Texas Longhorns won it all, Wisconsin in 2022, Kentucky in 2020 then Stanford back to back 2019 and 2018. After that it's been primarily a back and forth between Stanford, Nebraska and Penn State. But considering, I only have this year's roaster but with COVID years and eligibility, it can be assumed that some of those players from 2018 are probably still around. Of course, with the introduction of NIL and the infamous transfer portal, I would have to wonder what roasters looked like pre-NIL and COVID. Maybe back in 2019 this chart could look a little different. I don't think by much though. 
+
+### Out of State
+
+```{r}
+Power_five <- c("Big Ten", "SEC", "ACC", "Pac-12", "Big 12")
+
+logs_with_conferences <- logs_with_teams |>
+  filter(!is.na(in_out_state)) |>
+  filter(division == "I") |>
+  group_by(conference, in_out_state, division) |> 
+  summarise(
+    count = n()
+  ) |>
+ pivot_wider(names_from = in_out_state, values_from = count) |>
+  mutate(total = IN + OUT, pct_in = OUT/total *100)
+
+power_five <- logs_with_conferences |> filter(conference %in% Power_five)
+
+ggplot() + 
+  geom_bar(
+    data=power_five, 
+    aes(
+      x=reorder(conference, -pct_in), 
+      weight= pct_in
+      )
+    ) + 
+  scale_y_continuous(labels=comma) + 
+  labs(
+    title="The ACC and SEC value their out of state players", 
+    x="Conference", 
+    y="Percentage of In-State Players in conference"
+)
+```
+The number of out-of-state roasters are going to look a little closer together than in-state but here we see that the chart is flipped. The ACC this year has their powerhouses and championship runner up, Louisville and Pittsburgh. Pittsburgh doesn't have anyone in state on their roaster, I would have to assume maybe to a coaching issue considering Maryland picked up a former player from there and that player said she didn't have a good experience with that coach. Like every sport, volleyball is a small world, if you're a bad coach or have bad coaches on staff, it gets around the state. 
+### How about the HBCU?
 
 ```{r}
 logs_with_teams |>
-  filter(division == "I") |> 
-  filter(conference == "SEC") |>
-  group_by(team, team_state, state_clean) |> 
-  summarize(count = n()) |> 
+   filter(conference == "MEAC") |>
+   group_by(team, conference, in_out_state) |>
+   summarise(
+     count = n()) |> 
+    arrange(desc(count)) |> na.omit()
+
+
+logs_with_teams |>
+   filter(conference == "SWAC") |>
+   group_by(team, conference, in_out_state) |>
+   summarise(
+     count = n()) |> 
     arrange(desc(count)) |> na.omit()
 ```
+
+
 ### Looking at Top Schools in NCAA Tournment 
 
 ```{r}
