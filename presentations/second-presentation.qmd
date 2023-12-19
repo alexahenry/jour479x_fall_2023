@@ -1,6 +1,7 @@
 ```{r}
 library(tidyverse)
 library(scales)
+library(ggrepel)
 ```
 
 
@@ -254,12 +255,13 @@ logs_with_teams |>
     arrange(desc(count)) |> na.omit()
 ```
 A look at unique states each school has.
+
 Louisville
 ```{r}
 logs_with_teams |>
   filter(division == "I") |> 
-  filter(conference == "ACC") |>
-  filter(team == "Louisville") |>
+  filter(conference == "Big 12") |>
+  filter(team == "Texas") |>
   group_by(team_state, state_clean) |> 
   summarize(count = n()) |> 
     arrange(desc(count)) |> na.omit()
@@ -281,7 +283,7 @@ logs_with_teams |>
 states <- read_csv("States.xlsx - NST-EST2022-POP.csv")
 ```
 ```{r}
-logs |>
+logs_top10 <-logs |>
   group_by(state_clean) |>
   filter(!is.na(state_clean)) |>
   summarise(
@@ -289,7 +291,30 @@ logs |>
   arrange(desc(states)) |> top_n(10)
 ```
 ```{r}
-logs_with_populations <- states |> inner_join(logs, join_by("state_clean"))
+logs_with_populations <- states |> inner_join(logs_top10, join_by("state_clean"))
+
+
+logs_with_populations <- logs_with_populations |>
+  mutate(total = Population / states, pct_per_state = states / total *100)
+
+
+ggplot() + 
+  geom_bar(
+    data=logs_with_populations, 
+    aes(
+      x=reorder(state_clean, -pct_per_state), 
+      weight= pct_per_state
+      )
+    ) + 
+  scale_y_continuous(labels=comma) + 
+  labs(
+    title="Don't Mess with Texas", 
+    subtitle = "Texas has the most percentage of players per capita", 
+    caption = "Source: Cenus.gov | by Alexa Henry", 
+    x="States with the most NCAA Players", 
+    y="Per Capita"
+) 
 ```
+These results surprised me. Throughout both my presentations, Texas and California has really led the way in almost every category and here it's Texas and Ohio with Illinois close behind leading the way. But clearly, Texas is a dominate volleyball state if they have almost 8 players per capita. What's still interesting is that players aren't staying in state for Texas. I think if I were to continue with this, I would like to see where those Texas players are going or if there is a central place where they are going. 
 
-
+I would also like to see the makeup of past championships and see if roasters that are made up of In or Out of state win championships. Pitt was an example of a team that made it to the final four and they don't have anyone in-state on their roaster. Nebraska has three athletes on their roaster that are in-state and made it to the championship. However, Texas has 8 players including Asjia O'Neal and Madisen Skinner who have dominated all season for the Longhorns and won back to back championships. Could staying in state for Texas college/universities actually work? If I had more time, I would like to see the trend.
