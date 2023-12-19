@@ -3,6 +3,7 @@ library(tidyverse)
 library(scales)
 ```
 
+
 ```{r}
 logs <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/rosters_2023_cleaned.csv")
 ```
@@ -121,7 +122,7 @@ logs_with_teams |>
     count = n()
   ) |> arrange(desc(count)) |> na.omit()
 ```
-So here, I found something here, the ACC actually has more out of state players in their conference than any conference in DI. FSU and Pitt share the ACC championship. Pittsburgh does not have anyone in state on their team. (FSU isn't in the data but their under previous school's column. 
+So here, I found something here, the ACC actually has more out of state players in their conference than any conference in DI. FSU and Pitt share the ACC championship. Pittsburgh does not have anyone in state on their team. 
 
 ### Bar Chart of domestic players
 ```{r}
@@ -154,7 +155,7 @@ ggplot() +
     y="Percentage of In-State Players in conference"
 )
 ```
-I think the bar chart works well here. But come to find out, the Big 12 and Pac-12 tend to stay within in their own backyards. I think this is interesting because the last few championships in recent years have been a mixed bag. Last year, Texas Longhorns won it all, Wisconsin in 2022, Kentucky in 2020 then Stanford back to back 2019 and 2018. After that it's been primarily a back and forth between Stanford, Nebraska and Penn State. But considering, I only have this year's roaster but with COVID years and eligibility, it can be assumed that some of those players from 2018 are probably still around. Of course, with the introduction of NIL and the infamous transfer portal, I would have to wonder what roasters looked like pre-NIL and COVID. Maybe back in 2019 this chart could look a little different. I don't think by much though. 
+I think the bar chart works well here. But come to find out, the Big 12 and Pac-12 tend to stay within in their own backyards. I think this is interesting because the last few championships in recent years have been a mixed bag. Last year, Texas Longhorns won it all (and then again this year), Wisconsin in 2022, Kentucky in 2020 then Stanford back to back 2019 and 2018. After that it's been primarily a back and forth between Stanford, Nebraska and Penn State. But considering, I only have this year's roaster but with COVID years and eligibility, it can be assumed that some of those players from 2018 are probably still around. Of course, with the introduction of NIL and the infamous transfer portal, I would have to wonder what roasters looked like pre-NIL and COVID. Maybe back in 2019 this chart could look a lot different. 
 
 ### Out of State
 
@@ -169,7 +170,7 @@ logs_with_conferences <- logs_with_teams |>
     count = n()
   ) |>
  pivot_wider(names_from = in_out_state, values_from = count) |>
-  mutate(total = IN + OUT, pct_in = OUT/total *100)
+  mutate(total = IN + OUT, pct_out = OUT/total *100)
 
 power_five <- logs_with_conferences |> filter(conference %in% Power_five)
 
@@ -177,8 +178,8 @@ ggplot() +
   geom_bar(
     data=power_five, 
     aes(
-      x=reorder(conference, -pct_in), 
-      weight= pct_in
+      x=reorder(conference, -pct_out), 
+      weight= pct_out
       )
     ) + 
   scale_y_continuous(labels=comma) + 
@@ -207,7 +208,41 @@ logs_with_teams |>
      count = n()) |> 
     arrange(desc(count)) |> na.omit()
 ```
+So, here I wanted to look into D1 HBCU's and see who has the most in-state and out-of state players. There are only two primarily HBCU conferences. Universities like Hampton are not in a HBCU conference. 
 
+```{r}
+HBCU_vb <- c("SWAC", "MEAC")
+
+logs_with_conferences <- logs_with_teams |>
+  filter(!is.na(in_out_state)) |>
+  filter(division == "I") |>
+  group_by(conference, in_out_state, division) |> 
+  summarise(
+    count = n()
+  ) |>
+ pivot_wider(names_from = in_out_state, values_from = count) |>
+  mutate(total = IN + OUT, pct_in = IN/total *100)
+
+HBCU_vb <- logs_with_conferences |> filter(conference %in% HBCU_vb)
+
+
+ggplot() + 
+  geom_bar(
+    data=HBCU_vb, 
+    aes(
+      x=reorder(conference, -pct_in), 
+      weight= pct_in
+      )
+    ) + 
+  scale_y_continuous(labels=comma) + 
+  labs(
+    title="The SWAC stays close to home in recruiting", 
+    x="Conference", 
+    y="Percentage of In-State Players in conference"
+)
+
+```
+I don't know much about HBCU's and how they go about getting their players but it's interesting that the SWAC infamous Alcorn, Prairie View A&M, and FAMU, stay in-state. FAMU is located in a top ten state that produces the most amount of players in the NCAA so there is no surpirse there. However, Alcorn State surprised me. Mississippi does not produce that many volleyball players in the NCAA so I have to wonder where is Alcorn finding their players in Mississippi. 
 
 ### Looking at Top Schools in NCAA Tournment 
 
@@ -218,7 +253,7 @@ logs_with_teams |>
   summarize(count = n_distinct(state_clean)) |> 
     arrange(desc(count)) |> na.omit()
 ```
-A look at unique states each school has. (keep working with this, break down between Big conference and HBCU)
+A look at unique states each school has.
 Louisville
 ```{r}
 logs_with_teams |>
@@ -240,25 +275,21 @@ logs_with_teams |>
     arrange(desc(count)) |> na.omit()
 ```
 
-### Chart (come back to this)
-```{r}
-all_states <- logs_with_teams |>
-  group_by(state_clean) |> 
-  summarize(count = n()) |> 
-    arrange(desc(count))
-
-ggplot() +
-  geom_histogram(data=all_states, aes(y=count)) +
-  facet_wrap(~state_clean)
-  
-```
-
-
 ### Per Capita 
 
 ```{r}
-states <- read_csv("")
+states <- read_csv("States.xlsx - NST-EST2022-POP.csv")
 ```
-I just need to make this a csv. But my data got a little messy because I'm missing the division part of my work so I can sort it the way I want to which I think would help me with the per capita part. I think making this part maybe a beeswarm chart could be good. Other than facet wraps and bar charts for the positions is what I'm thinking would be best. 
+```{r}
+logs |>
+  group_by(state_clean) |>
+  filter(!is.na(state_clean)) |>
+  summarise(
+    states = n()) |>
+  arrange(desc(states)) |> top_n(10)
+```
+```{r}
+logs_with_populations <- states |> inner_join(logs, join_by("state_clean"))
+```
 
-So I think I may just need the division part back in the data and I can keep trucking along. 
+
